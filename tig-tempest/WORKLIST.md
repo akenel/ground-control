@@ -11,6 +11,10 @@
 
 1. **Tuning pass (optional)** — dial sound volumes, spawn mixes, spike danger to taste after more play.
 2. **Nice-to-haves** — bonus lives at score thresholds, a real attract-mode demo, more tube shapes (open/fan tubes), enemy variety per level, pause key.
+3. **Angel's parked ideas (2026-07-09):**
+   - **Between-level music** during STAND BY — eerie *Twilight-Zone-ish* arpeggio (Web Audio, original composition — the real TZ theme is copyrighted, so evoke, don't copy). On-brand.
+   - **Sexy `/status` page** (not raw JSON) — "all systems go · server up · build · N players online · top players" landing at `/healthz`+`/version`, with a *Play now* button. *Needs presence/leaderboard data → build it real in Phase 5, not faked earlier.*
+   - Test note: c3 (`=` life) and c5 (dev bar) weren't bugs — the cheats worked; feedback was too subtle. Fixed with bright cheat toasts + a clearer dev bar (proven headless).
 
 ### BIG EPIC — GO LIVE (in progress) — full spec in [`GO-LIVE.md`](GO-LIVE.md)
 
