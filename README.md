@@ -27,7 +27,7 @@ If that's you, you're ten minutes from a better setup.
 **Fastest path** — make your own copy from this template:
 
 ```bash
-gh repo create my-project --template <owner>/ground-control --private --clone
+gh repo create my-project --template akenel/ground-control --private --clone
 ```
 
 Or just click **"Use this template"** at the top of this page. Then:
