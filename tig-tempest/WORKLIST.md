@@ -7,6 +7,15 @@
 
 ## ON DECK
 
+**▶ ACTIVE (2026-07-09): GO LIVE on SBX first, then Phase 6 anti-cheat** (Angel's call).
+Phases 1–5 built + pushed; **SBX deploy rails (Phase 8a) committed** (`docker-compose.sbx.yml`,
+`deploy/`, `ops/provision-realm.py`, `DEPLOY-SBX.md`) and validated locally (overlay merges clean).
+**Next actionable = Angel runs the box runbook** (`DEPLOY-SBX.md`) on the box (167.233.125.248) to
+bring up `dev-tempest.wolfhold.app`. Current blocker: a stale **inert-loopback Caddy block** on the
+box (unset var → `localhost:20xx`) → no cert → TLS `internal error`; runbook §4 now clears it first.
+Then human-green the full stack on real HTTPS → **then Phase 6** (anti-cheat + seed the RNG) before STG/PRD.
+*(Driver note: build is driven from ONE terminal — keep it that way. Laptop can't reach the box; box steps are Angel's hands.)*
+
 *The faithful build is complete — core loop, waves/zoom, superzapper, full 5-enemy bestiary, title screen, high scores, and sound are all in. From here it's polish-to-taste and whatever Angel wants next. Ideas parked below.*
 
 1. **Tuning pass (optional)** — dial sound volumes, spawn mixes, spike danger to taste after more play.

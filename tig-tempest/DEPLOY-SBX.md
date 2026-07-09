@@ -58,9 +58,20 @@ docker compose -f docker-compose.yml -f docker-compose.sbx.yml ps
 This runs `tempest-app` + `tempest-db` + `tempest-minio`. The app joins freehold's
 network so its Caddy can reach it and it can reach freehold's Keycloak internally.
 
-## 4. Add the Caddy block (one edit to freehold's Caddyfile)
+## 4. Publish the hostname in freehold's Caddy
 
-In your **freehold** repo on the box, open `Caddyfile.prod` and add:
+**First, clear any stale `dev-tempest` entry.** The box symptom — TLS
+`internal error` / ACME challenge timeout — is a hostname block resolving to an
+inert loopback default (unset var → `localhost:20xx`), so no cert is ever issued.
+Find and remove it before adding the real one:
+
+```bash
+grep -rn 'dev-tempest' ~/path/to/freehold/Caddyfile.prod
+#   if a templated/inert line exists (e.g. reverse_proxy {$TEMPEST_UPSTREAM:localhost:20xx}),
+#   delete that whole block — the hard-coded one below replaces it.
+```
+
+Then in your **freehold** repo on the box, open `Caddyfile.prod` and add:
 
 ```caddy
 # ---- TIG · Tempest — SBX ----
@@ -79,6 +90,9 @@ docker exec freehold-caddy-1 caddy reload --config /etc/caddy/Caddyfile
 ## 5. Verify
 
 ```bash
+# TLS first — the handshake should now succeed (was: tlsv1 internal error).
+# First hit triggers cert issuance; give it a few seconds, then it's cached.
+curl -sS -o /dev/null -w 'TLS %{http_code} (ssl_verify=%{ssl_verify_result})\n' https://dev-tempest.wolfhold.app/healthz
 curl -s https://dev-tempest.wolfhold.app/healthz     # {"status":"ok","env":"sandbox","db":true}
 curl -s https://dev-tempest.wolfhold.app/version     # "env":"sandbox"
 ```
