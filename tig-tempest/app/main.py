@@ -173,6 +173,7 @@ _ACCOUNT_HTML = """<!doctype html><meta charset=utf-8>
   </div>
   <p style="margin-top:26px;text-align:center">
     <a href="/dashboard" style="color:#22d3ee">DASHBOARD</a> &nbsp;·&nbsp;
+    <a href="/leaderboard" style="color:#f59e0b">LEADERBOARD</a> &nbsp;·&nbsp;
     <a href="/" style="color:#22d3ee">▶ PLAY</a> &nbsp;·&nbsp;
     <a href="/logout" style="color:#64748b">SIGN OUT</a>
   </p>
@@ -224,6 +225,64 @@ async def api_leaderboard():
         {"rank": i + 1, "username": u, "best": b, "level": lvl, "avatar": media.url(avatars.get(u))}
         for i, (u, b, lvl) in enumerate(board)
     ]})
+
+
+@app.get("/leaderboard", response_class=HTMLResponse)
+async def leaderboard_page(request: Request):
+    """The public board — everyone's personal best, ranked, with avatars."""
+    me = deps.current_user(request)
+    me_un = me["username"] if me else None
+    board = await scores.leaderboard(20)
+    cards = await profiles.cards_for([u for (u, _, _) in board])
+    online = set(await presence.online())
+    medals = {1: "🥇", 2: "🥈", 3: "🥉"}
+
+    rows = ""
+    for i, (un, best, lvl) in enumerate(board):
+        rank = i + 1
+        dn, ak = cards.get(un, (un, None))
+        av = media.url(ak)
+        avatar = (
+            f"<img src='{av}' style='width:34px;height:34px;border-radius:50%;object-fit:cover;"
+            f"border:1px solid #22314a;vertical-align:middle'>" if av else
+            "<span style='display:inline-block;width:34px;height:34px;border-radius:50%;"
+            "border:1px dashed #22314a;vertical-align:middle'></span>"
+        )
+        dot = " 🟢" if un in online else ""
+        mine = "background:#0a2536" if un == me_un else ""
+        rows += (
+            f"<tr style='{mine}'><td style='color:#f59e0b;font-size:18px;text-align:center'>{medals.get(rank, rank)}</td>"
+            f"<td>{avatar} <b style='color:#fff'>{dn or un}</b>{dot}</td>"
+            f"<td style='color:#22d3ee;text-align:right'>{best:06d}</td>"
+            f"<td style='color:#64748b;text-align:right'>LVL {lvl}</td></tr>"
+        )
+    if not board:
+        rows = "<tr><td colspan=4 style='color:#64748b;text-align:center;padding:24px'>no scores yet — be the first</td></tr>"
+
+    nav = ("<a href='/dashboard' style='color:#22d3ee'>DASHBOARD</a>" if me
+           else "<a href='/login' style='color:#f59e0b'>SIGN IN</a> to join the board")
+    return HTMLResponse(_BOARD_HTML.format(rows=rows, env=APP_ENV.upper(), online=len(online), nav=nav))
+
+
+_BOARD_HTML = """<!doctype html><meta charset=utf-8>
+<title>TIG · Tempest — leaderboard</title>
+<body style="margin:0;background:#000;color:#22d3ee;font:15px/1.6 'Courier New',monospace">
+<div style="max-width:600px;margin:0 auto;padding:28px 16px">
+  <div style="text-align:center;font-size:26px;letter-spacing:5px;color:#fff;text-shadow:0 0 14px #22d3ee">TIG · TEMPEST</div>
+  <div style="text-align:center;color:#f59e0b;letter-spacing:3px;margin-bottom:4px">— LEADERBOARD — {env}</div>
+  <div style="text-align:center;color:#64748b;margin-bottom:14px">🟢 {online} online now</div>
+  <table style="width:100%;border-collapse:collapse">
+    <thead><tr style="color:#64748b;font-size:12px;text-align:left">
+      <th style="width:44px;text-align:center">#</th><th>PLAYER</th>
+      <th style="text-align:right">BEST</th><th style="text-align:right">LVL</th></tr></thead>
+    <tbody>{rows}</tbody>
+  </table>
+  <p style="margin-top:24px;text-align:center">
+    <a href="/" style="color:#22d3ee">▶ PLAY</a> &nbsp;·&nbsp; {nav}
+  </p>
+</div>
+<style>td{{padding:8px 8px;border-bottom:1px solid #12203a}}</style>
+</body>"""
 
 
 # ---- profile: text + image uploads (avatars/banners in MinIO) -------------
@@ -327,6 +386,7 @@ _DASH_HTML = """<!doctype html><meta charset=utf-8>
   <p style="margin-top:22px">🟢 ONLINE NOW &nbsp; {online}</p>
   <p style="margin-top:26px;text-align:center">
     <a href="/" style="color:#22d3ee">▶ PLAY</a> &nbsp;·&nbsp;
+    <a href="/leaderboard" style="color:#f59e0b">LEADERBOARD</a> &nbsp;·&nbsp;
     <a href="/account" style="color:#64748b">ACCOUNT</a> &nbsp;·&nbsp;
     <a href="/logout" style="color:#64748b">SIGN OUT</a>{admin}
   </p>

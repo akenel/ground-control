@@ -21,6 +21,18 @@ async def avatars_for(usernames: list[str]) -> dict[str, str | None]:
         return {u: k for u, k in rows}
 
 
+async def cards_for(usernames: list[str]) -> dict[str, tuple[str, str | None]]:
+    """username -> (display_name, avatar_key), for the leaderboard rows."""
+    if not usernames:
+        return {}
+    async with async_session() as s:
+        rows = (await s.execute(
+            select(Player.username, Player.display_name, Player.avatar_key)
+            .where(Player.username.in_(usernames))
+        )).all()
+        return {u: (dn, ak) for u, dn, ak in rows}
+
+
 async def update_text(username: str, display_name: str | None = None, tagline: str | None = None) -> None:
     async with async_session() as s:
         p = (await s.execute(select(Player).where(Player.username == username))).scalar_one_or_none()

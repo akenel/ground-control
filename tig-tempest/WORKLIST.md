@@ -66,7 +66,11 @@ Phase tracker:
   `GET /media/{key}` (streams from MinIO). Profile-edit `/account` page; avatar shows on the
   dashboard + in `/api/leaderboard`. `tempest-minio` in base compose (console :9101).
   Verified: upload→303, non-image→400, key stored, image served (200 image/png), board carries avatars.
-- Phase 5 — Leaderboard.
+- **Phase 5 — Leaderboard page** · **machine-green ✓, awaiting human-green.** Public `/leaderboard`
+  (server-rendered): top-20 personal bests, 🥇🥈🥉 medals, avatars, live 🟢 dots, your row
+  highlighted when signed in. `profiles.cards_for` (name+avatar). Linked from dashboard, account,
+  and the game title. Verified: public 200, board renders cap#1/demo#2 with avatar, self-highlight
+  on/off correct.
 - Phase 6 — Anti-cheat v1 (plausibility caps + game token); seed the RNG.
 - **Phase 7 — Arcade Keycloak login theme (CONFIRMED WANT).** Per-env branded login so
   players know it's *Tempest*, not raw Keycloak: a nice game background + clear

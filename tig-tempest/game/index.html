@@ -718,8 +718,8 @@
     const el = document.getElementById("who");
     if (!el) return;
     el.innerHTML = account
-      ? 'PLAYER <b>' + account.name + '</b> · <a href="/dashboard">DASHBOARD</a>'
-      : '<a href="/login">▶ SIGN IN</a> to save your scores';
+      ? 'PLAYER <b>' + account.name + '</b> · <a href="/dashboard">DASHBOARD</a> · <a href="/leaderboard">LEADERBOARD</a>'
+      : '<a href="/login">▶ SIGN IN</a> to save your scores · <a href="/leaderboard">LEADERBOARD</a>';
   }
   function pingPresence() {
     fetch("/api/ping", { method: "POST", credentials: "same-origin" }).catch(() => {});
