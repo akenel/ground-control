@@ -7,14 +7,25 @@
 
 ## ON DECK
 
-**▶ ACTIVE (2026-07-09): GO LIVE on SBX first, then Phase 6 anti-cheat** (Angel's call).
-Phases 1–5 built + pushed; **SBX deploy rails (Phase 8a) committed** (`docker-compose.sbx.yml`,
-`deploy/`, `ops/provision-realm.py`, `DEPLOY-SBX.md`) and validated locally (overlay merges clean).
-**Next actionable = Angel runs the box runbook** (`DEPLOY-SBX.md`) on the box (167.233.125.248) to
-bring up `dev-tempest.wolfhold.app`. Current blocker: a stale **inert-loopback Caddy block** on the
-box (unset var → `localhost:20xx`) → no cert → TLS `internal error`; runbook §4 now clears it first.
-Then human-green the full stack on real HTTPS → **then Phase 6** (anti-cheat + seed the RNG) before STG/PRD.
-*(Driver note: build is driven from ONE terminal — keep it that way. Laptop can't reach the box; box steps are Angel's hands.)*
+**🟢 LIVE (2026-07-09): Tempest is playing worldwide at https://www.wolfhold.app/tempest** —
+Angel human-green'd it (played to LVL 4, high scores saved, green padlock, build b71 · ec13b78).
+**We pivoted from the subdomain plan to a ROUTE inside Freehold** (`/tempest` = a static page +
+route + nav link, Robot-style) — simpler, no separate app/container/DNS. See [[deploy-ritual]].
+
+**Next on deck (do fresh, NOT tired — each is a prod deploy → use the two-part ritual):**
+1. **"Back to Freehold" escape hatch** — the game is a fullscreen dead-end. Add a small back-link
+   (e.g. Esc / a corner "← Freehold" → /dashboard) in `freehold/app/static/tempest.html`, redeploy.
+2. **Tidy-up:** remove the leftover `dev-tempest` block from the box's `Caddyfile.prod`
+   (`git checkout -- Caddyfile.prod` on the box) so ACME stops trying to cert an unused host.
+3. **Online leaderboard (optional, big):** wire the game's high scores to Freehold's EXISTING
+   Postgres + Keycloak login (no separate tempest-app needed — the subdomain SBX plan is superseded).
+
+**Deploy discipline (learned hard 2026-07-09):** every prod change = PRE-FLIGHT → gate → fix → POST-FLIGHT.
+Freehold gotcha: Caddy MUST start with the prod overlay (`docker-compose.prod.yml`) so it gets
+`SITE_DOMAIN`/`AUTH_DOMAIN` + public 80/443 — base compose alone → empty `{$SITE_DOMAIN}` → crash.
+
+*(Superseded/parked: the `dev-tempest.wolfhold.app` subdomain + `tempest-app`/SBX rails — `GO-LIVE.md`,
+`DEPLOY-SBX.md`, `docker-compose.sbx.yml`, `ops/provision-realm.py`. Kept for reference, not the live path.)*
 
 *The faithful build is complete — core loop, waves/zoom, superzapper, full 5-enemy bestiary, title screen, high scores, and sound are all in. From here it's polish-to-taste and whatever Angel wants next. Ideas parked below.*
 
@@ -97,6 +108,15 @@ decide. Not blocking launch.
 
 ## DONE (log — newest first)
 
+- 2026-07-09 — **🟢 TEMPEST LIVE WORLDWIDE** at https://www.wolfhold.app/tempest. Pivoted from the
+  subdomain plan to a `/tempest` route inside Freehold (static page + route + nav link, Robot-style;
+  commit `ec13b78`). Angel played to LVL 4, high scores persist, green padlock, build b71.
+- 2026-07-09 — **Prod incident + recovery (lessons > scare).** During the deploy the site went down;
+  root cause (proven by reproducing locally): Caddy started from **base compose without the prod
+  overlay** → `SITE_DOMAIN`/`AUTH_DOMAIN` empty → `{$SITE_DOMAIN}` collapsed → Caddy crash-looped at
+  `Caddyfile.prod:16`. Recovered with the new two-part ritual (`ops/caddy-preflight.sh` → gate →
+  `ops/caddy-fix.sh` post-flight). Also learned: connection-refused ≠ IP ban (the service was just
+  down); test-scripts-you-run-and-screenshot beat pasted commands (Angel's broken clipboard).
 - 2026-07-09 — Step 7: **Polish** — title/attract screen (spinning well, blinking INSERT COIN, controls, high score), **synthesized arcade sound** (fire/hit/zap/dive/hurt/start/gameover, M to mute), **high-score table** saved to localStorage (top 8, new-entry highlight). Introduced a `mode` state machine (title/play/over) — also fixed a latent first-frame auto-dive bug (game now starts clean at lvl 1). JS syntax verified, no stale refs. *Awaiting Angel's human-green.* **← faithful build complete.**
 - 2026-07-09 — Step 6b: **Fuseball + Pulsar** — Fuseball (lvl 4+): crackling ball, skates lanes, flickers armored (bolt-proof) / vulnerable, 250 pts. Pulsar (lvl 5+): electrifies its whole lane (cyan bolt warning); lethal if you're on it at the peak, 300 pts. **Full 5-enemy bestiary done.** JS syntax verified. *Awaiting Angel's human-green.*
 - 2026-07-09 — Step 6a: **Tanker** — amber block (lvl 3+, ~20%), climbs without flipping; shot → **splits into two flippers** at that spot. Tanker 100 pts. Three distinct enemy silhouettes now (red bowtie / green diamond / amber block). JS syntax verified. *Awaiting Angel's human-green.*
