@@ -59,8 +59,13 @@ Phase tracker:
   GAME OVER if signed in, pings every 20s, greets the player on the title (`#who`, `/me`).
   Verified: demo/cap scores stored, leaderboard ranks by personal best, presence lists online,
   dashboard renders, unauth POST → 401.
-- **Phase 4b — Profiles with avatars + banners (MinIO)** · *NEXT — Angel's confirmed want.*
-  Add MinIO to compose, upload endpoints, a profile edit page; avatar shows on the dashboard/board.
+- **Phase 4b — Profiles with avatars + banners (MinIO)** · **machine-green ✓, awaiting human-green.**
+  `app/media.py` (MinIO client, save/stream), `app/profiles.py` (get/update/set-image), Player
+  gains `tagline`/`avatar_key`/`banner_key` (migration `0002`). Endpoints: `POST /api/profile`
+  (name+tagline), `POST /api/profile/avatar` + `/banner` (multipart, ≤3/5 MB, image-only),
+  `GET /media/{key}` (streams from MinIO). Profile-edit `/account` page; avatar shows on the
+  dashboard + in `/api/leaderboard`. `tempest-minio` in base compose (console :9101).
+  Verified: upload→303, non-image→400, key stored, image served (200 image/png), board carries avatars.
 - Phase 5 — Leaderboard.
 - Phase 6 — Anti-cheat v1 (plausibility caps + game token); seed the RNG.
 - **Phase 7 — Arcade Keycloak login theme (CONFIRMED WANT).** Per-env branded login so

@@ -22,6 +22,11 @@ services:
       KC_CLIENT_SECRET: ${KC_CLIENT_SECRET:-tempest-dev-secret-change-me}
       SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-me}
       SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
+      # Object storage (avatars, banners).
+      MINIO_ENDPOINT: ${MINIO_ENDPOINT:-tempest-minio:9000}
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-tempest}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-tempest_dev}
+      MINIO_BUCKET: ${MINIO_BUCKET:-tempest}
     volumes:
       # Live-edit the game + test scripts in dev without a rebuild (read-only over the baked-in copies).
       - ./game:/srv/game:ro
@@ -32,6 +37,20 @@ services:
     depends_on:
       tempest-db:
         condition: service_healthy
+      tempest-minio:
+        condition: service_started
+    restart: unless-stopped
+
+  tempest-minio:
+    image: minio/minio:RELEASE.2025-04-22T22-12-26Z
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER:-tempest}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD:-tempest_dev}
+    volumes:
+      - tempest-minio-data:/data
+    ports:
+      - "127.0.0.1:9101:9001"     # MinIO console (optional) — avoids clash with freehold's
     restart: unless-stopped
 
   tempest-db:
@@ -51,3 +70,4 @@ services:
 
 volumes:
   tempest-pgdata:
+  tempest-minio-data:

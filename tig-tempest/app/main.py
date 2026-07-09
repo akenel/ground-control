@@ -8,8 +8,8 @@ cookie, never a token. Structure mirrors the freehold reference app.
 import os
 from pathlib import Path
 
-from fastapi import FastAPI, Request
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi import FastAPI, File, Form, Request, UploadFile
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
@@ -17,8 +17,10 @@ from starlette.middleware.sessions import SessionMiddleware
 import auth
 import build_info
 import deps
+import media
 import players
 import presence
+import profiles
 import scores
 from db import db_check
 
@@ -118,24 +120,59 @@ async def account(request: Request):
     user = deps.current_user(request)
     if not user:
         return RedirectResponse("/login")
+    prof = await profiles.get(user["username"])
     roles = ", ".join(user.get("roles") or []) or "player"
+    banner = media.url(prof.banner_key) if prof and prof.banner_key else ""
+    avatar = media.url(prof.avatar_key) if prof and prof.avatar_key else ""
+    banner_html = (f"<div style='height:120px;border-radius:10px;margin-bottom:-40px;"
+                   f"background:#0a1526 center/cover url({banner})'></div>" if banner else "")
+    avatar_html = (f"<img src='{avatar}' style='width:84px;height:84px;border-radius:50%;"
+                   f"object-fit:cover;border:2px solid #22d3ee'>" if avatar
+                   else "<div style='width:84px;height:84px;border-radius:50%;border:2px dashed #22314a;"
+                        "display:inline-block'></div>")
     return HTMLResponse(_ACCOUNT_HTML.format(
-        name=user.get("name") or user["username"], username=user["username"],
-        email=user.get("email") or "—", roles=roles, env=APP_ENV.upper(),
+        env=APP_ENV.upper(), username=user["username"], email=user.get("email") or "—", roles=roles,
+        display_name=(prof.display_name if prof else "") or user.get("name") or user["username"],
+        tagline=(prof.tagline if prof else ""), banner_html=banner_html, avatar_html=avatar_html,
     ))
 
 
 _ACCOUNT_HTML = """<!doctype html><meta charset=utf-8>
 <title>TIG · Tempest — account</title>
-<body style="margin:0;background:#000;color:#22d3ee;font:16px/1.7 'Courier New',monospace;
- display:flex;min-height:100vh;align-items:center;justify-content:center;text-align:center">
-<div>
-  <div style="font-size:30px;letter-spacing:5px;color:#fff;text-shadow:0 0 14px #22d3ee">TIG · TEMPEST</div>
-  <p style="color:#f59e0b;letter-spacing:2px">SIGNED IN — {env}</p>
-  <p>PLAYER <b style="color:#fff">{name}</b><br>
-     username <b>{username}</b> · email {email}<br>
-     roles <b>{roles}</b></p>
-  <p style="margin-top:26px">
+<body style="margin:0;background:#000;color:#22d3ee;font:15px/1.7 'Courier New',monospace">
+<div style="max-width:560px;margin:0 auto;padding:28px 18px">
+  <div style="text-align:center;font-size:26px;letter-spacing:5px;color:#fff;text-shadow:0 0 14px #22d3ee">TIG · TEMPEST</div>
+  <p style="text-align:center;color:#f59e0b;letter-spacing:2px">YOUR PROFILE — {env}</p>
+  {banner_html}
+  <div style="text-align:center">{avatar_html}
+    <div style="margin-top:6px;font-size:20px;color:#fff">{display_name}</div>
+    <div style="color:#64748b">@{username} · {email} · {roles}</div>
+    <div style="color:#22d3ee">{tagline}</div>
+  </div>
+  <hr style="border:0;border-top:1px solid #12203a;margin:22px 0">
+  <form method="post" action="/api/profile">
+    <label style="color:#64748b;font-size:12px">DISPLAY NAME</label><br>
+    <input name="display_name" value="{display_name}" maxlength=120
+      style="width:100%;background:#0a1526;border:1px solid #22314a;border-radius:6px;color:#e5eef7;padding:8px;font:14px monospace"><br>
+    <label style="color:#64748b;font-size:12px">TAGLINE</label><br>
+    <input name="tagline" value="{tagline}" maxlength=160 placeholder="one line of glory"
+      style="width:100%;background:#0a1526;border:1px solid #22314a;border-radius:6px;color:#e5eef7;padding:8px;font:14px monospace"><br>
+    <button style="margin-top:10px;background:#22d3ee;border:0;border-radius:6px;color:#04141a;padding:8px 16px;font-weight:700;cursor:pointer">SAVE</button>
+  </form>
+  <div style="display:flex;gap:16px;margin-top:16px;flex-wrap:wrap">
+    <form method="post" action="/api/profile/avatar" enctype="multipart/form-data">
+      <div style="color:#64748b;font-size:12px">AVATAR (≤3&nbsp;MB)</div>
+      <input type="file" name="file" accept="image/*" style="color:#8aa0b8;max-width:200px">
+      <button style="background:#0a1526;border:1px solid #22314a;border-radius:6px;color:#22d3ee;padding:6px 12px;cursor:pointer">UPLOAD</button>
+    </form>
+    <form method="post" action="/api/profile/banner" enctype="multipart/form-data">
+      <div style="color:#64748b;font-size:12px">BANNER (≤5&nbsp;MB)</div>
+      <input type="file" name="file" accept="image/*" style="color:#8aa0b8;max-width:200px">
+      <button style="background:#0a1526;border:1px solid #22314a;border-radius:6px;color:#22d3ee;padding:6px 12px;cursor:pointer">UPLOAD</button>
+    </form>
+  </div>
+  <p style="margin-top:26px;text-align:center">
+    <a href="/dashboard" style="color:#22d3ee">DASHBOARD</a> &nbsp;·&nbsp;
     <a href="/" style="color:#22d3ee">▶ PLAY</a> &nbsp;·&nbsp;
     <a href="/logout" style="color:#64748b">SIGN OUT</a>
   </p>
@@ -182,10 +219,54 @@ async def api_ping(request: Request):
 async def api_leaderboard():
     """Public: each player's personal best, ranked (the Phase 5 page reads this)."""
     board = await scores.leaderboard(20)
+    avatars = await profiles.avatars_for([u for (u, _, _) in board])
     return JSONResponse({"leaderboard": [
-        {"rank": i + 1, "username": u, "best": b, "level": lvl}
+        {"rank": i + 1, "username": u, "best": b, "level": lvl, "avatar": media.url(avatars.get(u))}
         for i, (u, b, lvl) in enumerate(board)
     ]})
+
+
+# ---- profile: text + image uploads (avatars/banners in MinIO) -------------
+@app.post("/api/profile")
+async def api_profile(request: Request, display_name: str = Form(""), tagline: str = Form("")):
+    user = deps.current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    await profiles.update_text(user["username"], display_name, tagline)
+    return RedirectResponse("/account", status_code=303)
+
+
+async def _save_upload(request: Request, file: UploadFile, field: str, prefix: str, cap: int):
+    user = deps.current_user(request)
+    if not user:
+        return RedirectResponse("/login", status_code=303)
+    if not media.is_image(file.content_type):
+        return HTMLResponse("Please upload an image (jpg/png/webp/gif).", status_code=400)
+    data = await file.read()
+    if len(data) > cap:
+        return HTMLResponse("Image too large.", status_code=400)
+    key = media.save_image(data, file.content_type, f"{prefix}/{user['username']}")
+    await profiles.set_image(user["username"], field, key)
+    return RedirectResponse("/account", status_code=303)
+
+
+@app.post("/api/profile/avatar")
+async def api_avatar(request: Request, file: UploadFile = File(...)):
+    return await _save_upload(request, file, "avatar_key", "avatars", 3_000_000)
+
+
+@app.post("/api/profile/banner")
+async def api_banner(request: Request, file: UploadFile = File(...)):
+    return await _save_upload(request, file, "banner_key", "banners", 5_000_000)
+
+
+@app.get("/media/{key:path}")
+async def media_get(key: str):
+    try:
+        it, content_type = media.stream(key)
+    except Exception:  # noqa: BLE001
+        return JSONResponse({"error": "not found"}, status_code=404)
+    return StreamingResponse(it, media_type=content_type)
 
 
 @app.get("/dashboard", response_class=HTMLResponse)
@@ -194,11 +275,16 @@ async def dashboard(request: Request):
     if not user:
         return RedirectResponse("/login")
     un = user["username"]
+    prof = await profiles.get(un)
     best = await scores.personal_best(un)
     rk = await scores.rank(un)
     last = await scores.last_score(un)
     recent = await scores.recent(un, 5)
     online = await presence.online()
+
+    avatar = media.url(prof.avatar_key) if prof and prof.avatar_key else ""
+    avatar_html = (f"<img src='{avatar}' style='width:64px;height:64px;border-radius:50%;"
+                   f"object-fit:cover;border:2px solid #22d3ee;vertical-align:middle'> " if avatar else "")
 
     last_html = (
         f"{last.points:06d} · LVL {last.level}" if last else "— no runs yet — go play"
@@ -210,7 +296,8 @@ async def dashboard(request: Request):
     online_html = " · ".join(f"<b>{n}</b>" for n in online) or "<span style='color:#64748b'>just you, so far</span>"
 
     return HTMLResponse(_DASH_HTML.format(
-        name=user.get("name") or un, env=APP_ENV.upper(),
+        name=(prof.display_name if prof and prof.display_name else user.get("name") or un),
+        avatar=avatar_html, env=APP_ENV.upper(),
         best=f"{best:06d}", rank=(f"#{rk}" if rk else "—"),
         last=last_html, recent=recent_html, online=online_html,
         admin=(" · <a href='/console' style='color:#f59e0b'>ADMIN</a>" if "admin" in (user.get("roles") or []) else ""),
@@ -224,7 +311,7 @@ _DASH_HTML = """<!doctype html><meta charset=utf-8>
   <div style="text-align:center">
     <div style="font-size:30px;letter-spacing:5px;color:#fff;text-shadow:0 0 14px #22d3ee">TIG · TEMPEST</div>
     <div style="color:#f59e0b;letter-spacing:2px">DASHBOARD — {env}</div>
-    <p>PLAYER <b style="color:#fff">{name}</b></p>
+    <p>{avatar}PLAYER <b style="color:#fff">{name}</b></p>
   </div>
   <div style="display:flex;gap:14px;justify-content:center;margin:18px 0">
     <div style="border:1px solid #22314a;border-radius:10px;padding:14px 22px;text-align:center">
