@@ -1,0 +1,23 @@
+# TIG · Tempest — SBX (sandbox) box overlay.
+#
+# Runs the Phase-1 app ON THE WOLFHOLD BOX, behind freehold's shared Caddy,
+# served at https://dev-tempest.wolfhold.app (real, auto-renewing Let's Encrypt).
+# Own stack, shared front door: this container just joins freehold's network so
+# freehold's Caddy can reverse_proxy to it — nothing about freehold's compose
+# changes (only one block added to its Caddyfile — see DEPLOY-SBX.md).
+#
+# On the box (from tig-tempest/):
+#   docker compose -f docker-compose.yml -f docker-compose.sbx.yml up -d --build
+services:
+  tempest-app:
+    container_name: tempest-app
+    environment:
+      APP_ENV: sandbox          # /version + build bar show "· SANDBOX"; dev cheats ON (dev-/stg- hosts)
+    networks:
+      edge:
+        aliases: [tempest-app]  # so freehold's Caddy can: reverse_proxy tempest-app:8000
+
+networks:
+  edge:
+    external: true
+    name: freehold_freehold     # freehold's compose network — verify: docker network ls | grep freehold
