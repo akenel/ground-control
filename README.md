@@ -2,6 +2,10 @@
 
 **Mission control for your AI copilot — memory, discipline, and control from your first session.**
 
+![A cold copilot session resuming instantly from memory: the user types the code word "ON DECK" and the copilot reopens the worklist, fixes the bug, checks its siblings, re-probes after deploy, and writes the lesson to memory.](assets/session.svg)
+
+<sub><i>A fresh session with nothing in context — one code word, and the copilot picks up exactly where you left off. No re-explaining.</i></sub>
+
 ---
 
 You started using an AI copilot. It's brilliant for ten minutes, then every new session it's a stranger again. You re-explain the same context every single day. It says "fixed" when it isn't. It wanders. You spend more time herding it than working.

@@ -1,0 +1,35 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="860" height="470" viewBox="0 0 860 470" font-family="SFMono-Regular, Consolas, 'Liberation Mono', Menlo, monospace">
+  <!-- window -->
+  <rect x="0" y="0" width="860" height="470" rx="12" fill="#0d1117" stroke="#30363d" stroke-width="1"/>
+  <!-- title bar -->
+  <path d="M0 12 A12 12 0 0 1 12 0 H848 A12 12 0 0 1 860 12 V44 H0 Z" fill="#161b22"/>
+  <line x1="0" y1="44" x2="860" y2="44" stroke="#30363d" stroke-width="1"/>
+  <circle cx="24" cy="22" r="6" fill="#ff5f56"/>
+  <circle cx="44" cy="22" r="6" fill="#ffbd2e"/>
+  <circle cx="64" cy="22" r="6" fill="#27c93f"/>
+  <text x="430" y="27" text-anchor="middle" font-size="13" fill="#8b949e">your-project — AI copilot session</text>
+
+  <!-- body -->
+  <text font-size="15">
+    <tspan x="28" y="84" fill="#6e7681"># new session — yesterday's context is gone</tspan>
+
+    <tspan x="28" y="122" fill="#58a6ff">you ▸ </tspan><tspan fill="#f0f6fc" font-weight="bold">ON DECK</tspan>
+
+    <tspan x="28" y="160" fill="#a371f7">copilot ▸ </tspan><tspan fill="#c9d1d9">Opening the worklist. Top of the deck:</tspan>
+    <tspan x="110" y="186" fill="#c9d1d9">1. checkout 500s when the cashier field is empty</tspan>
+    <tspan x="110" y="210" fill="#c9d1d9">2. ship the fix to prod</tspan>
+    <tspan x="110" y="234" fill="#c9d1d9">Starting on (1).</tspan>
+
+    <tspan x="110" y="272" fill="#3fb950">✓ </tspan><tspan fill="#8b949e">read the file before touching it</tspan>
+    <tspan x="110" y="296" fill="#3fb950">✓ </tspan><tspan fill="#8b949e">reproduced the empty-cashier case, then fixed it</tspan>
+    <tspan x="110" y="320" fill="#3fb950">✓ </tspan><tspan fill="#8b949e">found 2 sibling endpoints with the same bug — patched</tspan>
+    <tspan x="110" y="344" fill="#3fb950">✓ </tspan><tspan fill="#8b949e">re-probed after deploy — live and serving</tspan>
+
+    <tspan x="110" y="382" fill="#c9d1d9">wrote 1 lesson + updated the roadmap to memory</tspan>
+    <tspan x="110" y="406" fill="#6e7681" font-style="italic">tomorrow's session starts knowing all of it.</tspan>
+  </text>
+
+  <!-- memory hint bar -->
+  <rect x="28" y="428" width="804" height="26" rx="6" fill="#161b22" stroke="#30363d" stroke-width="1"/>
+  <text x="42" y="446" font-size="12.5" fill="#6e7681">memory: <tspan fill="#3fb950">CLAUDE.md</tspan> · <tspan fill="#3fb950">MEMORY.md</tspan> · standing rules loaded — the copilot resumed itself, you didn't re-explain a thing</text>
+</svg>
