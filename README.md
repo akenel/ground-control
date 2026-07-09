@@ -69,11 +69,13 @@ README ──────────► the pitch + quick start (you are here)
 
 ## ▶ Built with this method — play it
 
-This repo eats its own cooking. [**TIG · Tempest**](https://akenel.github.io/ground-control/tig-tempest/game/) is a complete arcade game — a faithful tribute to the 1981 classic — built in a **single session** using nothing but the spine in this kit: a human steering, an AI copilot rowing, every step written to files.
+This repo eats its own cooking. **TIG · Tempest** is a complete arcade game — a faithful tribute to the 1981 classic — built in a **single session** using nothing but the spine in this kit: a human steering, an AI copilot rowing, every step written to files.
 
-**[▶ Play it in your browser →](https://akenel.github.io/ground-control/tig-tempest/game/)**
+**[▶ Play it live → wolfhold.app/tempest](https://www.wolfhold.app/tempest)** — running on my own domain, deployed the *same day* it was built. *(Mirror: [GitHub Pages](https://akenel.github.io/ground-control/tig-tempest/game/).)*
 
 Then read its [context spine](tig-tempest/CLAUDE.md) and [build log](tig-tempest/WORKLIST.md) to see the method's fingerprints on a real thing — or watch the whole build happen, unedited, in the [**making-of session recording**](tig-tempest/worked-examples/session-01-tempest-in-a-day.md): empty folder to published game in one sitting.
+
+*Accounts + a live leaderboard are coming — soon you'll sign in with GitHub or Google and climb the ranks. Star the repo to catch it.*
 
 ## The one rule that makes it all work
 
