@@ -73,7 +73,7 @@ This repo eats its own cooking. [**TIG · Tempest**](https://akenel.github.io/gr
 
 **[▶ Play it in your browser →](https://akenel.github.io/ground-control/tig-tempest/game/)**
 
-Then read its [context spine](tig-tempest/CLAUDE.md) and [build log](tig-tempest/WORKLIST.md) to see the method's fingerprints on a real thing.
+Then read its [context spine](tig-tempest/CLAUDE.md) and [build log](tig-tempest/WORKLIST.md) to see the method's fingerprints on a real thing — or watch the whole build happen, unedited, in the [**making-of session recording**](tig-tempest/worked-examples/session-01-tempest-in-a-day.md): empty folder to published game in one sitting.
 
 ## The one rule that makes it all work
 

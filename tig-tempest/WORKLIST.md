@@ -12,6 +12,17 @@
 1. **Tuning pass (optional)** — dial sound volumes, spawn mixes, spike danger to taste after more play.
 2. **Nice-to-haves** — bonus lives at score thresholds, a real attract-mode demo, more tube shapes (open/fan tubes), enemy variety per level, pause key.
 
+### BIG EPIC (parked, don't start until Angel says GO) — GO LIVE
+
+Take Tempest online: accounts, leaderboard, "who's online", three environments
+(SBX/STG/PRD) on `*.wolfhold.app`, SSO via the **existing shared Keycloak**. Full
+spec + phased build order in [`GO-LIVE.md`](GO-LIVE.md) — every pattern
+cherry-picked from the `freehold` reference stack (auth, deploy, data layer).
+**Phase 1 = wrap the game in a thin FastAPI app that just serves `index.html`; no
+auth/DB yet.** Read the whole spec before touching anything. Note the two decisions
+Angel should make early: *own Tempest realms vs shared identity* (§1), and *seed the
+RNG from day one* for anti-cheat + seed-challenge (§7/§9).
+
 ---
 
 ## DONE (log — newest first)

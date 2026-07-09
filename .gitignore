@@ -12,3 +12,7 @@ Thumbs.db
 .env
 .env.local
 scratch/
+
+# Claude local settings + write-temp files
+.claude/settings.local.json
+.claude/*.tmp.*
