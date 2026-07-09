@@ -67,6 +67,14 @@ README ──────────► the pitch + quick start (you are here)
    └─► worked-example ───► proof it works, before you trust it
 ```
 
+## ▶ Built with this method — play it
+
+This repo eats its own cooking. [**TIG · Tempest**](https://akenel.github.io/ground-control/tig-tempest/game/) is a complete arcade game — a faithful tribute to the 1981 classic — built in a **single session** using nothing but the spine in this kit: a human steering, an AI copilot rowing, every step written to files.
+
+**[▶ Play it in your browser →](https://akenel.github.io/ground-control/tig-tempest/game/)**
+
+Then read its [context spine](tig-tempest/CLAUDE.md) and [build log](tig-tempest/WORKLIST.md) to see the method's fingerprints on a real thing.
+
 ## The one rule that makes it all work
 
 > **Write to files, not chat.** Chat is water — it evaporates at the next compaction. Files are stone. Anything that matters goes into a file your copilot reads next session, or it never happened.
