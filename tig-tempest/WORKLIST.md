@@ -39,7 +39,19 @@ Phase tracker:
   *Box-DB decision for Phase-2 SBX redeploy: own `tempest-db` container (current) vs reuse
   freehold's Postgres (a `tempest` DB) — decide at redeploy; overlay already keeps the app on
   both `edge` + default nets so its own DB works on the box.*
-- Phase 3 — Auth: three `tempest-*` realms on the shared Keycloak, `/login`, session cookie.
+- **Phase 3 — Auth (OIDC/Keycloak)** · **machine-green ✓, awaiting human-green browser login.**
+  `app/auth.py` + `deps.py` (copied from freehold), routes `/login /register /auth/callback
+  /logout /me /account` in `main.py`, signed session cookie (tokens stay server-side). Realm
+  `keycloak/realms/tempest-sbx-realm.json` (client `tempest-web`, roles admin/player, users
+  **demo/demo** = player, **cap/cap** = admin). Local dev runs its own throwaway Keycloak via
+  **`docker-compose.dev.yml`** (port 8082); the box uses shared `auth.wolfhold.app` (sbx overlay).
+  Lazy `players.upsert` on first login. Verified end-to-end: app validates a real KC token
+  (issuer/sig/aud), roles flow through, gates work.
+  - **Local dev now:** `docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build`,
+    then log in at http://localhost:8080/login (demo/demo).
+  - **Box TODO (Phase-3 SBX redeploy):** the `tempest-sbx` realm + `tempest-web` client must be
+    added to the *running* shared Keycloak via admin API (realms only import on a fresh KC DB) —
+    a `prod-apply`-style step. Set real `KC_CLIENT_SECRET` + `SESSION_SECRET` on the box.
 - Phase 4 — Score submit + **dashboard** + presence. *(Confirmed want: player **profiles with
   avatars + banners** via MinIO, like freehold's profile — build + test it here.)*
 - Phase 5 — Leaderboard.

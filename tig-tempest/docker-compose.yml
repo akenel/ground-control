@@ -12,6 +12,16 @@ services:
       GAME_DIR: /srv/game
       # One URL feeds runtime (asyncpg) + Alembic (psycopg, swapped in env.py).
       DATABASE_URL: postgresql://tempest:${POSTGRES_PASSWORD:-tempest_dev}@tempest-db:5432/tempest
+      # Auth (OIDC). Local defaults target the dev Keycloak (docker-compose.dev.yml);
+      # the sbx overlay overrides these to the shared auth.wolfhold.app on the box.
+      APP_BASE_URL: ${APP_BASE_URL:-http://localhost:8080}
+      KC_PUBLIC_URL: ${KC_PUBLIC_URL:-http://localhost:8082}
+      KC_INTERNAL_URL: ${KC_INTERNAL_URL:-http://tempest-kc:8080}
+      KC_REALM: ${KC_REALM:-tempest-sbx}
+      KC_CLIENT_ID: ${KC_CLIENT_ID:-tempest-web}
+      KC_CLIENT_SECRET: ${KC_CLIENT_SECRET:-tempest-dev-secret-change-me}
+      SESSION_SECRET: ${SESSION_SECRET:-dev-session-secret-change-me}
+      SESSION_COOKIE_SECURE: ${SESSION_COOKIE_SECURE:-false}
     volumes:
       # Live-edit the game + test scripts in dev without a rebuild (read-only over the baked-in copies).
       - ./game:/srv/game:ro

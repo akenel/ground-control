@@ -13,6 +13,15 @@ services:
     container_name: tempest-app
     environment:
       APP_ENV: sandbox          # /version + build bar show "· SANDBOX"; dev cheats ON (dev-/stg- hosts)
+      # Auth → the shared Keycloak on the box (realm tempest-sbx must exist there).
+      APP_BASE_URL: https://dev-tempest.wolfhold.app
+      KC_PUBLIC_URL: https://auth.wolfhold.app
+      KC_INTERNAL_URL: https://auth.wolfhold.app
+      KC_REALM: tempest-sbx
+      KC_CLIENT_ID: tempest-web
+      KC_CLIENT_SECRET: ${KC_CLIENT_SECRET:?set the tempest-web client secret on the box}
+      SESSION_SECRET: ${SESSION_SECRET:?set a long random session secret on the box}
+      SESSION_COOKIE_SECURE: "true"
     networks:
       edge:
         aliases: [tempest-app]  # so freehold's Caddy can: reverse_proxy tempest-app:8000
