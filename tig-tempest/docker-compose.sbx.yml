@@ -13,10 +13,12 @@ services:
     container_name: tempest-app
     environment:
       APP_ENV: sandbox          # /version + build bar show "· SANDBOX"; dev cheats ON (dev-/stg- hosts)
-      # Auth → the shared Keycloak on the box (realm tempest-sbx must exist there).
+      # Auth → the shared Keycloak on the box (realm tempest-sbx provisioned via
+      # ops/provision-realm.py). Internal hop uses freehold's keycloak container
+      # (tempest-app is on freehold's network) — same split-horizon freehold uses.
       APP_BASE_URL: https://dev-tempest.wolfhold.app
       KC_PUBLIC_URL: https://auth.wolfhold.app
-      KC_INTERNAL_URL: https://auth.wolfhold.app
+      KC_INTERNAL_URL: http://keycloak:8080
       KC_REALM: tempest-sbx
       KC_CLIENT_ID: tempest-web
       KC_CLIENT_SECRET: ${KC_CLIENT_SECRET:?set the tempest-web client secret on the box}
