@@ -16,6 +16,7 @@ services:
     networks:
       edge:
         aliases: [tempest-app]  # so freehold's Caddy can: reverse_proxy tempest-app:8000
+      default: {}               # so the app can still reach tempest-db (Phase 2+)
 
 networks:
   edge:

@@ -33,7 +33,12 @@ Phase tracker:
   **/testkit/** (`app/testkit/index.html`, TEST-TMP-P1 — banco format: pass/fail rows, autosave,
   copy-results). Convention: **one test script per phase**; new-user tests use Gmail plus-addressing
   (`angel.kenel+larry@…`). *Test harness itself is machine-verified (serves 200); awaiting Angel's run-through.*
-- Phase 2 — Postgres + models + migrations (`players`, `scores`, `presence`).
+- **Phase 2 — Postgres + models + migrations** · **machine-green ✓** (self-migrates on boot;
+  tables `players`/`scores`/`presence` created; `/healthz` reports `db:true`). `app/models.py`,
+  `app/db.py`, `app/alembic/` (rev `0001`), Postgres `tempest-db` in base compose.
+  *Box-DB decision for Phase-2 SBX redeploy: own `tempest-db` container (current) vs reuse
+  freehold's Postgres (a `tempest` DB) — decide at redeploy; overlay already keeps the app on
+  both `edge` + default nets so its own DB works on the box.*
 - Phase 3 — Auth: three `tempest-*` realms on the shared Keycloak, `/login`, session cookie.
 - Phase 4 — Score submit + **dashboard** + presence. *(Confirmed want: player **profiles with
   avatars + banners** via MinIO, like freehold's profile — build + test it here.)*

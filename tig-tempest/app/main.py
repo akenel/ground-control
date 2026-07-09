@@ -14,6 +14,7 @@ from fastapi.responses import JSONResponse
 from fastapi.staticfiles import StaticFiles
 
 import build_info
+from db import db_check
 
 # Where the game lives. Baked into the image at /srv/game; overridable for local dev.
 GAME_DIR = os.getenv("GAME_DIR", str(Path(__file__).resolve().parent.parent / "game"))
@@ -26,8 +27,9 @@ app = FastAPI(title="TIG · Tempest", version="0.1.0-phase1")
 
 @app.get("/healthz")
 async def healthz():
-    """Liveness probe. No DB to check yet — Phase 2 adds it."""
-    return JSONResponse({"status": "ok", "env": APP_ENV})
+    """Liveness probe — app + DB round-trip."""
+    ok, _ = await db_check()
+    return JSONResponse({"status": "ok" if ok else "degraded", "env": APP_ENV, "db": ok})
 
 
 @app.get("/version")

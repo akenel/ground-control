@@ -1,7 +1,7 @@
 name: tempest
 
-# GO-LIVE Phase 1 — the game, served by a thin FastAPI app. No auth, no DB yet.
-# Open http://localhost:8080 after `docker compose up -d --build`.
+# GO-LIVE Phase 2 — the game + a thin FastAPI app + Postgres (players/scores/presence).
+# No auth yet. Open http://localhost:8080 after `docker compose up -d --build`.
 services:
   tempest-app:
     build:
@@ -10,6 +10,8 @@ services:
     environment:
       APP_ENV: ${APP_ENV:-dev}
       GAME_DIR: /srv/game
+      # One URL feeds runtime (asyncpg) + Alembic (psycopg, swapped in env.py).
+      DATABASE_URL: postgresql://tempest:${POSTGRES_PASSWORD:-tempest_dev}@tempest-db:5432/tempest
     volumes:
       # Live-edit the game + test scripts in dev without a rebuild (read-only over the baked-in copies).
       - ./game:/srv/game:ro
@@ -17,4 +19,25 @@ services:
     ports:
       # Loopback-only in dev, like freehold. Host 8080 -> container 8000.
       - "127.0.0.1:8080:8000"
+    depends_on:
+      tempest-db:
+        condition: service_healthy
     restart: unless-stopped
+
+  tempest-db:
+    image: postgres:16-alpine
+    environment:
+      POSTGRES_USER: tempest
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-tempest_dev}
+      POSTGRES_DB: tempest
+    volumes:
+      - tempest-pgdata:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U tempest -d tempest"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+    restart: unless-stopped
+
+volumes:
+  tempest-pgdata:
