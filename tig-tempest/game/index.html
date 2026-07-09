@@ -19,12 +19,31 @@
     font: 12px/1.4 "Courier New", monospace; color: #64748b; letter-spacing: 2px;
     pointer-events: none;
   }
+  #buildbar {
+    position: fixed; bottom: 12px; right: 14px;
+    font: 11px/1.4 "Courier New", monospace; color: #22d3ee; opacity: .55;
+    letter-spacing: 1px; text-shadow: 0 0 6px #22d3ee55;
+    pointer-events: none; user-select: none;
+  }
 </style>
 </head>
 <body>
 <div id="hud"><span id="score">SCORE 000000</span><span id="zap">ZAP ×2</span><span id="lives">LIVES ♦ ♦ ♦</span></div>
 <canvas id="game"></canvas>
 <div id="hint">MOVE MOUSE — RIDE THE RIM · CLICK/HOLD — FIRE · SPACE — SUPERZAPPER · M — MUTE</div>
+<div id="buildbar">BUILD dev</div>
+<script>
+  // Build bar — the running build's number · SHA · date, from the app's /version
+  // endpoint (freehold-style branding, always visible incl. the title screen).
+  // Served by the app → shows the real stamp; opened as a bare file with no
+  // endpoint → stays "BUILD dev", honestly.
+  fetch("/version").then((r) => (r.ok ? r.json() : null)).then((v) => {
+    if (!v) return;
+    const parts = [v.version, v.sha, v.date].filter(Boolean).join("  ·  ");
+    const env = v.env && v.env !== "production" ? "  ·  " + String(v.env).toUpperCase() : "";
+    document.getElementById("buildbar").textContent = "BUILD " + parts + env;
+  }).catch(() => {});
+</script>
 <script>
 (() => {
   "use strict";

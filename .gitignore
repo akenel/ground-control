@@ -16,3 +16,8 @@ scratch/
 # Claude local settings + write-temp files
 .claude/settings.local.json
 .claude/*.tmp.*
+
+# Tempest app — local build stamp (stamped at deploy) + python caches
+tig-tempest/app/build-sha.txt
+__pycache__/
+*.pyc

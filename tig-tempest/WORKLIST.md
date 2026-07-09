@@ -12,16 +12,36 @@
 1. **Tuning pass (optional)** — dial sound volumes, spawn mixes, spike danger to taste after more play.
 2. **Nice-to-haves** — bonus lives at score thresholds, a real attract-mode demo, more tube shapes (open/fan tubes), enemy variety per level, pause key.
 
-### BIG EPIC (parked, don't start until Angel says GO) — GO LIVE
+### BIG EPIC — GO LIVE (in progress) — full spec in [`GO-LIVE.md`](GO-LIVE.md)
 
-Take Tempest online: accounts, leaderboard, "who's online", three environments
-(SBX/STG/PRD) on `*.wolfhold.app`, SSO via the **existing shared Keycloak**. Full
-spec + phased build order in [`GO-LIVE.md`](GO-LIVE.md) — every pattern
-cherry-picked from the `freehold` reference stack (auth, deploy, data layer).
-**Phase 1 = wrap the game in a thin FastAPI app that just serves `index.html`; no
-auth/DB yet.** Read the whole spec before touching anything. Note the two decisions
-Angel should make early: *own Tempest realms vs shared identity* (§1), and *seed the
-RNG from day one* for anti-cheat + seed-challenge (§7/§9).
+Take Tempest online: accounts, leaderboard, "who's online", three envs on
+`*.wolfhold.app`, SSO via the **existing shared Keycloak**. Phased build order in
+`GO-LIVE.md` §13. Two decisions still open: *own Tempest realms vs shared identity*
+(§1) and *seed the RNG from day one* for anti-cheat + seed-challenge (§7/§9).
+
+Phase tracker:
+- **Phase 1 — thin FastAPI serves the game** · *DONE (machine-green), awaiting Angel's human-green.*
+  App in `tig-tempest/app/` (`main.py`, `Dockerfile`, `entrypoint.sh`), `docker-compose.yml`.
+  `docker compose up -d --build` → play at **http://localhost:8080**. `/healthz` + `/version`
+  verified. **Build bar** added to the game (freehold-style: `BUILD b# · sha · date · ENV`,
+  reads `/version`) — Angel's branding, shows on the title screen.
+- Phase 2 — Postgres + models + migrations (`players`, `scores`, `presence`).
+- Phase 3 — Auth: three `tempest-*` realms on the shared Keycloak, `/login`, session cookie.
+- Phase 4 — Score submit + **dashboard** + presence. *(Confirmed want: player **profiles with
+  avatars + banners** via MinIO, like freehold's profile — build + test it here.)*
+- Phase 5 — Leaderboard.
+- Phase 6 — Anti-cheat v1 (plausibility caps + game token); seed the RNG.
+- **Phase 7 — Arcade Keycloak login theme (CONFIRMED WANT).** Per-env branded login so
+  players know it's *Tempest*, not raw Keycloak: a nice game background + clear
+  "TEMPEST · PRODUCTION / STAGING / SANDBOX" so they know which env they're in. `GO-LIVE.md` §6.
+  *(Needs Phase 3 first — can't theme a login that doesn't exist yet.)*
+- Phase 8 — Deploy rails (compose overlays, SOPS, backup gate) → SBX → STG → PRD.
+- Phase 9 — Social login (Google + GitHub first; Facebook after review).
+
+Parked research (Angel's question): **real-time multiplayer** — how do other games do it,
+and could Tempest? Currently `GO-LIVE.md` §9 says single-driver + async seed-challenge.
+Write up the options (shared-world netcode vs. the cheap seed-race) in Lego language and
+decide. Not blocking launch.
 
 ---
 

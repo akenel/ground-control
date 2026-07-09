@@ -1,0 +1,19 @@
+name: tempest
+
+# GO-LIVE Phase 1 — the game, served by a thin FastAPI app. No auth, no DB yet.
+# Open http://localhost:8080 after `docker compose up -d --build`.
+services:
+  tempest-app:
+    build:
+      context: .
+      dockerfile: app/Dockerfile
+    environment:
+      APP_ENV: ${APP_ENV:-dev}
+      GAME_DIR: /srv/game
+    volumes:
+      # Live-edit the game in dev without a rebuild (read-only over the baked-in copy).
+      - ./game:/srv/game:ro
+    ports:
+      # Loopback-only in dev, like freehold. Host 8080 -> container 8000.
+      - "127.0.0.1:8080:8000"
+    restart: unless-stopped
