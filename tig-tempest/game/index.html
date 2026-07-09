@@ -38,6 +38,12 @@
     text-shadow: 0 0 12px #f59e0baa; pointer-events: none; opacity: 0;
     transition: opacity .2s; user-select: none;
   }
+  #who {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    font: 12px/1.4 "Courier New", monospace; color: #22d3ee; letter-spacing: 1px;
+    text-shadow: 0 0 6px #22d3ee55; user-select: none; z-index: 5;
+  }
+  #who a { color: #f59e0b; text-decoration: none; }
 </style>
 </head>
 <body>
@@ -47,6 +53,7 @@
 <div id="buildbar">BUILD dev</div>
 <div id="devbar"></div>
 <div id="cheat"></div>
+<div id="who"></div>
 <script>
   // Build bar — the running build's number · SHA · date, from the app's /version
   // endpoint (freehold-style branding, always visible incl. the title screen).
@@ -138,10 +145,13 @@
   const SPIKE_ERODE = 0.09;     // how much of a spike a single bolt knocks back
   const SPIKE_DANGER = 0.45;    // spike tip below this depth is lethal on the dive
 
+  let account = null;            // {username, name, ...} from /me when signed in, else null
+  let gameStartMs = 0;           // for run duration
+
   function startGame() {
     score = 0; lives = 3; firing = false; fireCd = 0;
     zapFlash = 0; hurtFlash = 0; level = 1; zooming = false; zoomT = 0;
-    lastRank = -1; mode = "play";
+    lastRank = -1; mode = "play"; gameStartMs = Date.now();
     startWave();
     sfx.start();
   }
@@ -149,6 +159,7 @@
   function endGame() {
     mode = "over"; firing = false;
     recordScore(score, level);
+    submitScore(score, level, Date.now() - gameStartMs);   // to the leaderboard, if signed in
     sfx.gameover();
   }
 
@@ -674,6 +685,8 @@
 
     hudEl.style.display = mode === "title" ? "none" : "";
     hintEl.style.display = mode === "play" ? "" : "none";
+    const whoEl = document.getElementById("who");
+    if (whoEl) whoEl.style.display = mode === "title" ? "" : "none";   // sign-in prompt: attract screen only
 
     if (mode === "title") { drawTitle(); requestAnimationFrame(frame); return; }
 
@@ -700,6 +713,31 @@
     if (mode === "over") drawGameOver();
     requestAnimationFrame(frame);
   }
+  // --- account / server sync (Phase 4) ----------------------------------
+  function renderWho() {
+    const el = document.getElementById("who");
+    if (!el) return;
+    el.innerHTML = account
+      ? 'PLAYER <b>' + account.name + '</b> · <a href="/dashboard">DASHBOARD</a>'
+      : '<a href="/login">▶ SIGN IN</a> to save your scores';
+  }
+  function pingPresence() {
+    fetch("/api/ping", { method: "POST", credentials: "same-origin" }).catch(() => {});
+  }
+  function submitScore(points, level, durationMs) {
+    if (!account) return;                       // anonymous run — local high score only
+    fetch("/api/scores", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ points, level, waves: level, duration_ms: durationMs }),
+    }).catch(() => {});
+  }
+  fetch("/me", { credentials: "same-origin" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
+    account = d && d.user ? d.user : null;
+    renderWho();                                // signed in → greet; signed out → SIGN IN link
+    if (account) { pingPresence(); setInterval(pingPresence, 20000); }  // heartbeat while the tab is open
+  }).catch(() => {});                           // no /me endpoint (static hosting) → no account UI
+
   function cheatToast(msg) {
     const el = document.getElementById("cheat");
     if (!el) return;

@@ -52,8 +52,15 @@ Phase tracker:
   - **Box TODO (Phase-3 SBX redeploy):** the `tempest-sbx` realm + `tempest-web` client must be
     added to the *running* shared Keycloak via admin API (realms only import on a fresh KC DB) —
     a `prod-apply`-style step. Set real `KC_CLIENT_SECRET` + `SESSION_SECRET` on the box.
-- Phase 4 — Score submit + **dashboard** + presence. *(Confirmed want: player **profiles with
-  avatars + banners** via MinIO, like freehold's profile — build + test it here.)*
+- **Phase 4a — Score submit + dashboard + presence** · **machine-green ✓, awaiting human-green.**
+  `app/scores.py` (submit, personal_best, last, recent, leaderboard, rank) + `app/presence.py`
+  (heartbeat). API: `POST /api/scores` (guarded), `POST /api/ping`, `GET /api/leaderboard`,
+  `GET /dashboard` (HTML: best · rank · last · recent · who's online). Game wired: submits on
+  GAME OVER if signed in, pings every 20s, greets the player on the title (`#who`, `/me`).
+  Verified: demo/cap scores stored, leaderboard ranks by personal best, presence lists online,
+  dashboard renders, unauth POST → 401.
+- **Phase 4b — Profiles with avatars + banners (MinIO)** · *NEXT — Angel's confirmed want.*
+  Add MinIO to compose, upload endpoints, a profile edit page; avatar shows on the dashboard/board.
 - Phase 5 — Leaderboard.
 - Phase 6 — Anti-cheat v1 (plausibility caps + game token); seed the RNG.
 - **Phase 7 — Arcade Keycloak login theme (CONFIRMED WANT).** Per-env branded login so

@@ -11,12 +11,15 @@ from pathlib import Path
 from fastapi import FastAPI, Request
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from pydantic import BaseModel
 from starlette.middleware.sessions import SessionMiddleware
 
 import auth
 import build_info
 import deps
 import players
+import presence
+import scores
 from db import db_check
 
 GAME_DIR = os.getenv("GAME_DIR", str(Path(__file__).resolve().parent.parent / "game"))
@@ -92,7 +95,7 @@ async def auth_callback(request: Request):
     }
     request.session["id_token"] = tokens["id_token"]
     await players.upsert(username, claims.get("name") or username)   # lazy player row
-    return RedirectResponse("/account", status_code=303)
+    return RedirectResponse("/dashboard", status_code=303)
 
 
 @app.get("/logout")
@@ -137,6 +140,112 @@ _ACCOUNT_HTML = """<!doctype html><meta charset=utf-8>
     <a href="/logout" style="color:#64748b">SIGN OUT</a>
   </p>
 </div></body>"""
+
+
+# ---- scores · presence · leaderboard · dashboard --------------------------
+class ScoreIn(BaseModel):
+    points: int
+    level: int = 1
+    waves: int = 0
+    duration_ms: int = 0
+
+
+@app.post("/api/scores")
+async def api_submit_score(body: ScoreIn, request: Request):
+    """The game POSTs a finished run here (same-origin, session cookie). Basic
+    sanity clamps only — real anti-cheat (plausibility + game token) is Phase 6."""
+    user = deps.current_user(request)
+    if not user:
+        return JSONResponse({"error": "not signed in"}, status_code=401)
+    pts = max(0, min(body.points, 10_000_000))
+    lvl = max(1, min(body.level, 999))
+    await scores.submit(user["username"], pts, lvl, max(0, body.waves), max(0, body.duration_ms))
+    return JSONResponse({
+        "ok": True,
+        "best": await scores.personal_best(user["username"]),
+        "rank": await scores.rank(user["username"]),
+    })
+
+
+@app.post("/api/ping")
+async def api_ping(request: Request):
+    """Presence heartbeat. Returns who's online now."""
+    user = deps.current_user(request)
+    if not user:
+        return JSONResponse({"online": [], "count": 0})
+    await presence.ping(user["username"])
+    names = await presence.online()
+    return JSONResponse({"online": names, "count": len(names)})
+
+
+@app.get("/api/leaderboard")
+async def api_leaderboard():
+    """Public: each player's personal best, ranked (the Phase 5 page reads this)."""
+    board = await scores.leaderboard(20)
+    return JSONResponse({"leaderboard": [
+        {"rank": i + 1, "username": u, "best": b, "level": lvl}
+        for i, (u, b, lvl) in enumerate(board)
+    ]})
+
+
+@app.get("/dashboard", response_class=HTMLResponse)
+async def dashboard(request: Request):
+    user = deps.current_user(request)
+    if not user:
+        return RedirectResponse("/login")
+    un = user["username"]
+    best = await scores.personal_best(un)
+    rk = await scores.rank(un)
+    last = await scores.last_score(un)
+    recent = await scores.recent(un, 5)
+    online = await presence.online()
+
+    last_html = (
+        f"{last.points:06d} · LVL {last.level}" if last else "— no runs yet — go play"
+    )
+    recent_html = "".join(
+        f"<tr><td>{r.points:06d}</td><td>LVL {r.level}</td>"
+        f"<td>{r.created_at:%Y-%m-%d %H:%M}</td></tr>" for r in recent
+    ) or "<tr><td colspan=3 style='color:#64748b'>no runs yet</td></tr>"
+    online_html = " · ".join(f"<b>{n}</b>" for n in online) or "<span style='color:#64748b'>just you, so far</span>"
+
+    return HTMLResponse(_DASH_HTML.format(
+        name=user.get("name") or un, env=APP_ENV.upper(),
+        best=f"{best:06d}", rank=(f"#{rk}" if rk else "—"),
+        last=last_html, recent=recent_html, online=online_html,
+        admin=(" · <a href='/console' style='color:#f59e0b'>ADMIN</a>" if "admin" in (user.get("roles") or []) else ""),
+    ))
+
+
+_DASH_HTML = """<!doctype html><meta charset=utf-8>
+<title>TIG · Tempest — dashboard</title>
+<body style="margin:0;background:#000;color:#22d3ee;font:15px/1.7 'Courier New',monospace">
+<div style="max-width:640px;margin:0 auto;padding:32px 18px">
+  <div style="text-align:center">
+    <div style="font-size:30px;letter-spacing:5px;color:#fff;text-shadow:0 0 14px #22d3ee">TIG · TEMPEST</div>
+    <div style="color:#f59e0b;letter-spacing:2px">DASHBOARD — {env}</div>
+    <p>PLAYER <b style="color:#fff">{name}</b></p>
+  </div>
+  <div style="display:flex;gap:14px;justify-content:center;margin:18px 0">
+    <div style="border:1px solid #22314a;border-radius:10px;padding:14px 22px;text-align:center">
+      <div style="color:#64748b;font-size:12px">PERSONAL BEST</div>
+      <div style="font-size:26px;color:#fff">{best}</div></div>
+    <div style="border:1px solid #22314a;border-radius:10px;padding:14px 22px;text-align:center">
+      <div style="color:#64748b;font-size:12px">RANK</div>
+      <div style="font-size:26px;color:#f59e0b">{rank}</div></div>
+  </div>
+  <p>LAST RUN &nbsp; <b style="color:#fff">{last}</b></p>
+  <p style="color:#64748b;margin-bottom:4px">RECENT RUNS</p>
+  <table style="width:100%;border-collapse:collapse">{recent}</table>
+  <p style="margin-top:22px">🟢 ONLINE NOW &nbsp; {online}</p>
+  <p style="margin-top:26px;text-align:center">
+    <a href="/" style="color:#22d3ee">▶ PLAY</a> &nbsp;·&nbsp;
+    <a href="/account" style="color:#64748b">ACCOUNT</a> &nbsp;·&nbsp;
+    <a href="/logout" style="color:#64748b">SIGN OUT</a>{admin}
+  </p>
+</div>
+<style>td{{padding:4px 8px;border-bottom:1px solid #12203a}}</style>
+</body>"""
 
 
 # ---- static: test kit, then the game (catch-all, mounted last) ------------
