@@ -17,6 +17,8 @@ import build_info
 
 # Where the game lives. Baked into the image at /srv/game; overridable for local dev.
 GAME_DIR = os.getenv("GAME_DIR", str(Path(__file__).resolve().parent.parent / "game"))
+# Interactive test scripts (served at /testkit/), next to the app.
+TESTKIT_DIR = os.getenv("TESTKIT_DIR", str(Path(__file__).resolve().parent / "testkit"))
 APP_ENV = os.getenv("APP_ENV", "dev")
 
 app = FastAPI(title="TIG · Tempest", version="0.1.0-phase1")
@@ -39,6 +41,10 @@ async def version():
     })
 
 
+# Interactive test scripts (TEST-TMP-P1, …) at /testkit/. Mounted before the
+# catch-all game mount so /testkit wins.
+app.mount("/testkit", StaticFiles(directory=TESTKIT_DIR, html=True), name="testkit")
+
 # The game itself, served unchanged. html=True makes "/" resolve to index.html.
-# Mounted LAST so the explicit /healthz and /version routes above win.
+# Mounted LAST so the explicit routes + /testkit above win.
 app.mount("/", StaticFiles(directory=GAME_DIR, html=True), name="game")

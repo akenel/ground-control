@@ -11,8 +11,9 @@ services:
       APP_ENV: ${APP_ENV:-dev}
       GAME_DIR: /srv/game
     volumes:
-      # Live-edit the game in dev without a rebuild (read-only over the baked-in copy).
+      # Live-edit the game + test scripts in dev without a rebuild (read-only over the baked-in copies).
       - ./game:/srv/game:ro
+      - ./app/testkit:/app/testkit:ro
     ports:
       # Loopback-only in dev, like freehold. Host 8080 -> container 8000.
       - "127.0.0.1:8080:8000"

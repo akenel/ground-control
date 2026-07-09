@@ -25,6 +25,12 @@
     letter-spacing: 1px; text-shadow: 0 0 6px #22d3ee55;
     pointer-events: none; user-select: none;
   }
+  #devbar {
+    position: fixed; bottom: 12px; left: 14px; display: none;
+    font: 11px/1.4 "Courier New", monospace; color: #f59e0b; opacity: .75;
+    letter-spacing: 1px; text-shadow: 0 0 6px #f59e0b55;
+    pointer-events: none; user-select: none;
+  }
 </style>
 </head>
 <body>
@@ -32,6 +38,7 @@
 <canvas id="game"></canvas>
 <div id="hint">MOVE MOUSE — RIDE THE RIM · CLICK/HOLD — FIRE · SPACE — SUPERZAPPER · M — MUTE</div>
 <div id="buildbar">BUILD dev</div>
+<div id="devbar"></div>
 <script>
   // Build bar — the running build's number · SHA · date, from the app's /version
   // endpoint (freehold-style branding, always visible incl. the title screen).
@@ -88,6 +95,13 @@
   let score = 0;
   let lives = 3;
   let mode = "title";           // "title" | "play" | "over"
+  // Dev/test cheats — ON only on localhost, dev-/stg- hosts, or ?dev=1.
+  // OFF on production (tempest.wolfhold.app) and GitHub Pages, so real players never see them.
+  const dev = {
+    on: /[?&]dev=1\b/.test(location.search) ||
+        /^(localhost$|127\.|dev-|stg-)/.test(location.hostname),
+    god: false,                 // toggled invincible (key 0)
+  };
   let ticks = 0;                // global frame counter (blink / spin)
   let muted = false;
   let lastRank = -1;            // rank of the just-finished run in the high-score table
@@ -185,7 +199,7 @@
 
   function startZoom() {
     // crashing into a tall spike on your lane costs a life
-    if (spikes[playerLane] < SPIKE_DANGER) {
+    if (spikes[playerLane] < SPIKE_DANGER && !dev.god) {
       lives--; hurtFlash = 12; sfx.hurt();
       if (lives <= 0) { endGame(); return; }
     }
@@ -231,6 +245,23 @@
   window.addEventListener("mouseup", () => { firing = false; });
   window.addEventListener("blur", () => { firing = false; });
   window.addEventListener("keydown", (e) => {
+    if (dev.on) {
+      const d = e.code;
+      if (d >= "Digit1" && d <= "Digit9") {              // jump straight to level N (test without grinding)
+        if (mode !== "play") startGame();
+        level = +d.slice(5); startWave(); renderDevBar(); return;
+      }
+      if (d === "Equal") { lives++; return; }             // +1 life
+      if (d === "Digit0") { dev.god = !dev.god; renderDevBar(); return; }  // toggle invincible
+      if (d === "Backslash") { if (mode === "play") endGame(); return; }   // force GAME OVER
+      if (mode === "play") {                              // spawn one of a specific enemy, on demand
+        if (d === "KeyF") { spawnEnemy("flipper"); return; }
+        if (d === "KeyS") { spawnEnemy("spiker"); return; }
+        if (d === "KeyT") { spawnEnemy("tanker"); return; }
+        if (d === "KeyB") { spawnEnemy("fuseball"); return; }
+        if (d === "KeyP") { spawnEnemy("pulsar"); return; }
+      }
+    }
     if (e.code === "KeyM") { muted = !muted; return; }   // mute toggle
     if (e.code === "Space") {
       e.preventDefault();
@@ -249,23 +280,25 @@
     return best;
   }
 
-  function spawnEnemy() {
-    const r = Math.random();
-    let type = "flipper";
-    if (level >= 5) {
-      if (r < 0.14) type = "pulsar";
-      else if (r < 0.28) type = "fuseball";
-      else if (r < 0.44) type = "tanker";
-      else if (r < 0.64) type = "spiker";
-    } else if (level >= 4) {
-      if (r < 0.16) type = "fuseball";
-      else if (r < 0.34) type = "tanker";
-      else if (r < 0.56) type = "spiker";
-    } else if (level >= 3) {
-      if (r < 0.20) type = "tanker";
-      else if (r < 0.48) type = "spiker";
-    } else if (level >= 2 && r < 0.30) {
-      type = "spiker";
+  function spawnEnemy(forceType) {
+    let type = forceType || "flipper";
+    if (!forceType) {
+      const r = Math.random();
+      if (level >= 5) {
+        if (r < 0.14) type = "pulsar";
+        else if (r < 0.28) type = "fuseball";
+        else if (r < 0.44) type = "tanker";
+        else if (r < 0.64) type = "spiker";
+      } else if (level >= 4) {
+        if (r < 0.16) type = "fuseball";
+        else if (r < 0.34) type = "tanker";
+        else if (r < 0.56) type = "spiker";
+      } else if (level >= 3) {
+        if (r < 0.20) type = "tanker";
+        else if (r < 0.48) type = "spiker";
+      } else if (level >= 2 && r < 0.30) {
+        type = "spiker";
+      }
     }
     const e = { type, lane: Math.floor(Math.random() * LANES), d: 1, flipCd: 40 + Math.random() * 40 };
     if (type === "fuseball") { e.driftCd = 18 + Math.random() * 22; e.armored = false; e.armorCd = 30 + Math.random() * 20; }
@@ -593,8 +626,8 @@
       if (e.type !== "pulsar") continue;
       const hot = Math.sin(e.pulse) > 0.75;
       if (hot && !e.zappedThisPulse && playerLane === e.lane) {
-        lives--; hurtFlash = 12; sfx.hurt(); e.zappedThisPulse = true;
-        if (lives <= 0) endGame();
+        e.zappedThisPulse = true;
+        if (!dev.god) { lives--; hurtFlash = 12; sfx.hurt(); if (lives <= 0) endGame(); }
       }
       if (!hot) e.zappedThisPulse = false;
     }
@@ -615,8 +648,8 @@
     // enemy reached the rim -> costs a life
     for (const e of enemies) {
       if (e.d <= 0 && !e.dead) {
-        e.dead = true; lives--; hurtFlash = 12; sfx.hurt();
-        if (lives <= 0) endGame();
+        e.dead = true;
+        if (!dev.god) { lives--; hurtFlash = 12; sfx.hurt(); if (lives <= 0) endGame(); }
       }
     }
 
@@ -662,6 +695,15 @@
     if (mode === "over") drawGameOver();
     requestAnimationFrame(frame);
   }
+  function renderDevBar() {
+    const el = document.getElementById("devbar");
+    if (!el) return;
+    if (!dev.on) { el.style.display = "none"; return; }
+    el.style.display = "";
+    el.textContent = "DEV  1-9 LEVEL · = LIFE · 0 GOD" + (dev.god ? " ✦ON" : "") +
+                     " · F/S/T/B/P SPAWN · \\ OVER";
+  }
+  renderDevBar();
   frame();
 })();
 </script>

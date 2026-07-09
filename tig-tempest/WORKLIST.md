@@ -20,11 +20,15 @@ Take Tempest online: accounts, leaderboard, "who's online", three envs on
 (§1) and *seed the RNG from day one* for anti-cheat + seed-challenge (§7/§9).
 
 Phase tracker:
-- **Phase 1 — thin FastAPI serves the game** · *DONE (machine-green), awaiting Angel's human-green.*
+- **Phase 1 — thin FastAPI serves the game** · **human-green ✓** (Angel played to lvl 6 at localhost:8080).
   App in `tig-tempest/app/` (`main.py`, `Dockerfile`, `entrypoint.sh`), `docker-compose.yml`.
-  `docker compose up -d --build` → play at **http://localhost:8080**. `/healthz` + `/version`
-  verified. **Build bar** added to the game (freehold-style: `BUILD b# · sha · date · ENV`,
-  reads `/version`) — Angel's branding, shows on the title screen.
+  `docker compose up -d --build` → play at **http://localhost:8080**. `/healthz` + `/version` verified.
+  **Build bar** on the game (freehold-style `BUILD b# · sha · date · ENV`, reads `/version`) — Angel's branding.
+  **Dev cheats** (gated: localhost/dev-/stg- only, never prod/Pages): `1-9` jump level · `=` +life ·
+  `0` god · `\` force over · `F/S/T/B/P` spawn enemy. **Interactive test harness** at
+  **/testkit/** (`app/testkit/index.html`, TEST-TMP-P1 — banco format: pass/fail rows, autosave,
+  copy-results). Convention: **one test script per phase**; new-user tests use Gmail plus-addressing
+  (`angel.kenel+larry@…`). *Test harness itself is machine-verified (serves 200); awaiting Angel's run-through.*
 - Phase 2 — Postgres + models + migrations (`players`, `scores`, `presence`).
 - Phase 3 — Auth: three `tempest-*` realms on the shared Keycloak, `/login`, session cookie.
 - Phase 4 — Score submit + **dashboard** + presence. *(Confirmed want: player **profiles with

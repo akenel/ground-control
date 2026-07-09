@@ -1,0 +1,343 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>TIG · Tempest — Phase 1 Quick Test (TEST-TMP-P1)</title>
+<style>
+  :root {
+    --bg:#0b1220; --panel:#111a2e; --ink:#e5eef7; --muted:#8aa0b8; --line:#22314a;
+    --cyan:#22d3ee; --amber:#f59e0b; --green:#22c55e; --red:#ef4444; --accent:#22d3ee;
+  }
+  * { box-sizing: border-box; }
+  body { margin:0; background:var(--bg); color:var(--ink);
+    font:15px/1.55 system-ui,-apple-system,Segoe UI,Arial,sans-serif; }
+  .wrap { max-width:900px; margin:0 auto; padding:20px 16px 80px; }
+  header.top { display:flex; justify-content:space-between; align-items:baseline;
+    border-bottom:2px solid var(--cyan); padding-bottom:8px; margin-bottom:4px; }
+  header.top .brand { font-weight:700; letter-spacing:1px; }
+  header.top .brand small { color:var(--muted); font-weight:400; letter-spacing:0; }
+  header.top .code { color:var(--cyan); font:13px/1 "Courier New",monospace; }
+  h1 { font-size:24px; margin:14px 0 4px; }
+  .lede { color:var(--muted); margin:0 0 14px; }
+  .box { background:var(--panel); border:1px solid var(--line); border-radius:10px;
+    padding:12px 14px; margin:12px 0; }
+  .how { border-left:3px solid var(--cyan); }
+  .prog { display:flex; align-items:center; gap:14px; flex-wrap:wrap; }
+  .prog .pct { font-size:30px; font-weight:800; }
+  .prog .bar { flex:1; min-width:160px; height:12px; background:#0a1526;
+    border:1px solid var(--line); border-radius:99px; overflow:hidden; }
+  .prog .bar > i { display:block; height:100%; width:0; background:var(--green); transition:width .25s; }
+  .prog .clock { font:14px/1 "Courier New",monospace; color:var(--muted); }
+  .fields { display:grid; grid-template-columns:1fr 1fr; gap:10px 18px; }
+  .fields label { display:block; font-size:12px; color:var(--muted); text-transform:uppercase; letter-spacing:1px; }
+  .fields input { width:100%; background:#0a1526; border:1px solid var(--line); border-radius:6px;
+    color:var(--ink); padding:7px 9px; font:14px "Courier New",monospace; }
+  .links a { display:inline-block; margin:2px 10px 2px 0; color:var(--cyan);
+    text-decoration:none; border-bottom:1px dashed var(--cyan); font-size:14px; }
+  .chips { margin-top:6px; }
+  .chip { display:inline-block; margin:3px 6px 3px 0; padding:3px 9px; cursor:pointer;
+    background:#0a1526; border:1px solid var(--line); border-radius:99px;
+    color:var(--ink); font:12px/1.4 "Courier New",monospace; }
+  .chip:hover { border-color:var(--cyan); }
+  h2.sec { margin:26px 0 4px; font-size:16px; color:var(--cyan);
+    border-bottom:1px solid var(--line); padding-bottom:4px; }
+  h2.sec.preview { color:var(--amber); border-color:#3a2f16; }
+  table { width:100%; border-collapse:collapse; margin-top:6px; }
+  th,td { text-align:left; vertical-align:top; padding:9px 8px; border-bottom:1px solid var(--line); }
+  th { font-size:12px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); }
+  td.n { color:var(--cyan); font:13px "Courier New",monospace; width:26px; }
+  td.expect { color:var(--muted); }
+  td.verdict { width:150px; white-space:nowrap; }
+  .kbd { display:inline-block; min-width:16px; text-align:center; padding:1px 6px; margin:0 1px;
+    background:#0a1526; border:1px solid var(--line); border-radius:5px;
+    font:12px "Courier New",monospace; color:var(--amber); }
+  button.v { border:1px solid var(--line); background:#0a1526; color:var(--ink);
+    border-radius:6px; padding:4px 9px; margin-right:5px; cursor:pointer; font-size:13px; }
+  button.v.pass.on { background:var(--green); border-color:var(--green); color:#04140a; font-weight:700; }
+  button.v.fail.on { background:var(--red); border-color:var(--red); color:#1a0505; font-weight:700; }
+  .ts { display:block; color:var(--muted); font:11px "Courier New",monospace; margin-top:3px; }
+  td.note input { width:100%; background:transparent; border:none; border-bottom:1px dashed var(--line);
+    color:var(--ink); padding:3px 0; font-size:13px; }
+  tr.preview td { opacity:.7; }
+  tr.preview td.verdict { color:var(--amber); font:12px "Courier New",monospace; }
+  .actions { display:flex; gap:10px; flex-wrap:wrap; margin-top:18px; }
+  .actions button { padding:9px 16px; border-radius:8px; border:1px solid var(--line);
+    background:var(--panel); color:var(--ink); cursor:pointer; font-size:14px; }
+  .actions button.primary { background:var(--cyan); border-color:var(--cyan); color:#04141a; font-weight:700; }
+  .verdict-final { display:flex; gap:22px; margin-top:8px; flex-wrap:wrap; }
+  .verdict-final label { cursor:pointer; }
+  footer { color:var(--muted); font-size:12px; margin-top:26px; border-top:1px solid var(--line); padding-top:10px;
+    display:flex; justify-content:space-between; flex-wrap:wrap; gap:8px; }
+  .out { white-space:pre-wrap; font:12px/1.5 "Courier New",monospace; color:var(--muted);
+    background:#0a1526; border:1px solid var(--line); border-radius:8px; padding:12px; margin-top:12px; display:none; }
+</style>
+</head>
+<body>
+<div class="wrap">
+
+  <header class="top">
+    <span class="brand">🕹️ TIG · Tempest <small>— on the Ground Control / freehold engine</small></span>
+    <span class="code">TEST-TMP-P1</span>
+  </header>
+
+  <h1>Phase 1 — Serve &amp; Play (quick test)</h1>
+  <p class="lede">Proves the game is now <b>served by the app</b> (not opened from a file), the ops
+    endpoints answer, the <b>build bar</b> brands the screen, the faithful game <b>still plays exactly
+    as before</b>, and the <b>dev cheats</b> let a tester reach any state without grinding to level 7.
+    Green all the way = Phase 1 signed off → build Phase 2.</p>
+
+  <div class="box how">
+    <b>How to use:</b> open the game in another tab, do each step, then tap <b>PASS</b> or <b>FAIL</b> on that
+    row (it stamps the time). Add a note if you like. Everything <b>auto-saves in this browser</b> — close it,
+    come back, your progress is still here. When it's green (or you want to send it to Tig), hit
+    <b>Copy results</b> and paste it back.
+    <div style="margin-top:8px;color:var(--amber)"><b>Dev cheats</b> (only on localhost / dev- / stg-, never on prod):
+      <span class="kbd">1</span>–<span class="kbd">9</span> jump to that level ·
+      <span class="kbd">=</span> +1 life ·
+      <span class="kbd">0</span> god-mode (invincible) ·
+      <span class="kbd">\</span> force GAME OVER ·
+      <span class="kbd">F</span><span class="kbd">S</span><span class="kbd">T</span><span class="kbd">B</span><span class="kbd">P</span>
+      spawn flipper / spiker / tanker / fuseball / pulsar.</div>
+  </div>
+
+  <div class="box prog">
+    <span class="pct" id="pct">0%</span>
+    <span id="tally">0 pass · 0 fail · 0 left</span>
+    <span class="bar"><i id="barfill"></i></span>
+    <span class="clock" id="clock">⏱ 00:00</span>
+  </div>
+
+  <div class="box fields">
+    <div><label>Tester</label><input id="f-tester" placeholder="angel"></div>
+    <div><label>Date</label><input id="f-date"></div>
+    <div><label>Build (auto from /version)</label><input id="f-build" placeholder="loading…"></div>
+    <div><label>Environment</label><input id="f-env" placeholder="dev"></div>
+  </div>
+
+  <div class="box">
+    <div class="links">
+      <a href="/" target="_blank">▶ Open the game ↗</a>
+      <a href="/healthz" target="_blank">/healthz ↗</a>
+      <a href="/version" target="_blank">/version ↗</a>
+    </div>
+    <div class="chips" id="chips"></div>
+  </div>
+
+  <div id="checks"></div>
+
+  <div class="box">
+    <b>Overall verdict</b>
+    <div class="verdict-final">
+      <label><input type="radio" name="final" value="pass"> ✅ PASS — Phase 1 solid, build Phase 2</label>
+      <label><input type="radio" name="final" value="fail"> ❌ FAIL — see notes, fix first</label>
+    </div>
+  </div>
+
+  <div class="actions">
+    <button class="primary" id="copy">📋 Copy results</button>
+    <button id="toggleout">Show results text</button>
+    <button id="reset">↺ Reset this test</button>
+  </div>
+  <div class="out" id="out"></div>
+
+  <footer>
+    <span>Confidential — Internal · TEST-TMP-P1 · Rev 1</span>
+    <span id="foot-date"></span>
+  </footer>
+</div>
+
+<script>
+(() => {
+  "use strict";
+  const TEST_ID = "TEST-TMP-P1";
+  const KEY = "tempest-test-" + TEST_ID;
+
+  // ---- the checks -------------------------------------------------------
+  // live:true  → counts toward the pass/fail tally
+  // live:false → a Phase-3 preview row (not testable yet), shown greyed
+  const CHECKS = [
+    { s:"A · App is up (served, not a file)" },
+    { id:"a1", do:"Open <b>http://localhost:8080</b> in a browser.", ex:"The Tempest title/attract screen loads — spinning well, blinking INSERT COIN. No error." },
+    { id:"a2", do:"Look bottom-right.", ex:"Build bar reads <b>BUILD b# · &lt;sha&gt; · &lt;date&gt; · DEV</b> in cyan." },
+    { id:"a3", do:"Open <b>/healthz</b>.", ex:'JSON <code>{"status":"ok","env":"dev"}</code>.' },
+    { id:"a4", do:"Open <b>/version</b>.", ex:"JSON with version, sha, date, env — the <b>sha matches the build bar</b>." },
+
+    { s:"B · The game still plays (unchanged by the wrapper)" },
+    { id:"b1", do:"Click <b>INSERT COIN</b>. Move the mouse.", ex:"Starts at <b>LVL 1</b>; the ship rides the rim, following the mouse." },
+    { id:"b2", do:"Click &amp; hold to fire at climbing enemies.", ex:"Bolts fire (max 8 on screen); hits kill enemies; SCORE climbs." },
+    { id:"b3", do:"Press <span class='kbd'>Space</span> when the screen has enemies.", ex:"Superzapper white-flash wipes them; ZAP count drops by one." },
+    { id:"b4", do:"Clear a whole wave.", ex:"<b>STAND BY</b> breather → tunnel dive → <b>LEVEL 2</b> in a new hue; ZAP refills." },
+    { id:"b5", do:"Press <span class='kbd'>M</span>.", ex:"Sound mutes / unmutes." },
+
+    { s:"C · Dev cheats (reach any state without grinding)" },
+    { id:"c1", do:"During play, press <span class='kbd'>7</span>.", ex:"Jumps straight to <b>LVL 7</b> (HUD shows it) with a fresh wave." },
+    { id:"c2", do:"Press <span class='kbd'>0</span>.", ex:"Amber dev bar (bottom-left) shows <b>GOD ✦ON</b>; enemies can no longer take a life." },
+    { id:"c3", do:"Press <span class='kbd'>=</span> a few times.", ex:"LIVES increases by one each press." },
+    { id:"c4", do:"Press <span class='kbd'>\\</span> during play.", ex:"Forces <b>GAME OVER</b> instantly — the score / high-score screen appears." },
+    { id:"c5", do:"Confirm the amber <b>DEV</b> bar is bottom-left listing the keys.", ex:"Present on localhost; you trust it is <b>absent on prod</b> &amp; GitHub Pages (real players get no cheats)." },
+
+    { s:"D · Enemy bestiary spot-check (god-mode + spawn keys)" },
+    { id:"d1", do:"Press <span class='kbd'>0</span> (god on), then <span class='kbd'>F</span>.", ex:"<b>Flipper</b> — red bowtie, climbs &amp; flips lane-to-lane. Shot = <b>150</b>." },
+    { id:"d2", do:"Press <span class='kbd'>S</span>.", ex:"<b>Spiker</b> — green diamond, lays a zig-zag spike up its lane. <b>200</b>." },
+    { id:"d3", do:"Press <span class='kbd'>T</span>, then shoot it.", ex:"<b>Tanker</b> — amber block; when shot it <b>splits into two flippers</b>. <b>100</b>." },
+    { id:"d4", do:"Press <span class='kbd'>B</span>.", ex:"<b>Fuseball</b> — crackling ball, skates lanes, flickers armored (bolt-proof) / vulnerable. <b>250</b>." },
+    { id:"d5", do:"Press <span class='kbd'>P</span>, stand on its lane at the peak.", ex:"<b>Pulsar</b> — electrifies its whole lane (cyan warning); lethal at the peak (god blocks it). <b>300</b>." },
+
+    { s:"E · New players &amp; accounts — PREVIEW (arrives with Phase 3 · not testable yet)", preview:true },
+    { id:"e1", preview:true, do:"Register <b>angel.kenel+larry@gmail.com</b> (Gmail plus-addressing = unique login, one inbox).", ex:"Creates a unique Keycloak player, lands logged in with role <code>player</code>, no admin." },
+    { id:"e2", preview:true, do:"Register <b>+john</b> and <b>+testuser1</b> the same way.", ex:"Each is a distinct account; the leaderboard tells them apart by username." },
+    { id:"e3", preview:true, do:"Try to reuse a taken username.", ex:"Keycloak rejects it — usernames are unique in the realm." },
+    { id:"e4", preview:true, do:"Use the one-click <b>demo</b> player.", ex:"Signs in instantly, no sign-up, to try the game." },
+    { id:"e5", preview:true, do:"Check the login screen per env.", ex:"Branded arcade theme reads <b>TEMPEST · SANDBOX / STAGING / PRODUCTION</b> — you know where you are." },
+  ];
+
+  const state = JSON.parse(localStorage.getItem(KEY) || "{}");
+  state.rows = state.rows || {};   // id -> {v:'pass'|'fail', ts, note}
+  state.fields = state.fields || {};
+  state.final = state.final || "";
+  state.started = state.started || Date.now();
+
+  const $ = (s, r=document) => r.querySelector(s);
+  const nowStr = () => new Date().toLocaleTimeString([], {hour:"2-digit",minute:"2-digit",second:"2-digit"});
+  const save = () => localStorage.setItem(KEY, JSON.stringify(state));
+
+  // ---- render checks ----------------------------------------------------
+  const host = $("#checks");
+  let html = "", tableOpen = false;
+  const liveIds = [];
+  for (const c of CHECKS) {
+    if (c.s) {
+      if (tableOpen) { html += "</tbody></table>"; }
+      html += `<h2 class="sec${c.preview?" preview":""}">${c.s}</h2>`;
+      html += `<table><thead><tr><th>#</th><th>Do this</th><th>Expect this</th><th>Verdict</th><th>Note</th></tr></thead><tbody>`;
+      tableOpen = true; continue;
+    }
+    if (!c.preview) liveIds.push(c.id);
+    const r = state.rows[c.id] || {};
+    if (c.preview) {
+      html += `<tr class="preview"><td class="n">–</td><td>${c.do}</td><td class="expect">${c.ex}</td>`
+            + `<td class="verdict">Phase 3</td><td class="note"></td></tr>`;
+    } else {
+      html += `<tr data-id="${c.id}"><td class="n">${liveIds.length}</td><td>${c.do}</td><td class="expect">${c.ex}</td>`
+            + `<td class="verdict">`
+            + `<button class="v pass${r.v==="pass"?" on":""}" data-v="pass">✓</button>`
+            + `<button class="v fail${r.v==="fail"?" on":""}" data-v="fail">✗</button>`
+            + `<span class="ts">${r.ts?("@ "+r.ts):""}</span></td>`
+            + `<td class="note"><input placeholder="note…" value="${(r.note||"").replace(/"/g,"&quot;")}"></td></tr>`;
+    }
+  }
+  if (tableOpen) html += "</tbody></table>";
+  host.innerHTML = html;
+
+  // ---- wire verdict buttons + notes ------------------------------------
+  host.addEventListener("click", (e) => {
+    const btn = e.target.closest("button.v"); if (!btn) return;
+    const id = btn.closest("tr").dataset.id;
+    const v = btn.dataset.v;
+    const row = state.rows[id] || {};
+    row.v = (row.v === v) ? null : v;            // tap again to clear
+    row.ts = row.v ? nowStr() : "";
+    state.rows[id] = row;
+    const tr = btn.closest("tr");
+    tr.querySelectorAll("button.v").forEach(b => b.classList.toggle("on", b.dataset.v === row.v));
+    tr.querySelector(".ts").textContent = row.ts ? ("@ " + row.ts) : "";
+    save(); refresh();
+  });
+  host.addEventListener("input", (e) => {
+    const inp = e.target.closest("td.note input"); if (!inp) return;
+    const id = inp.closest("tr").dataset.id;
+    state.rows[id] = state.rows[id] || {};
+    state.rows[id].note = inp.value; save();
+  });
+
+  // ---- fields -----------------------------------------------------------
+  const fmap = { "f-tester":"tester", "f-date":"date", "f-build":"build", "f-env":"env" };
+  for (const [el, k] of Object.entries(fmap)) {
+    const node = document.getElementById(el);
+    node.value = state.fields[k] || "";
+    node.addEventListener("input", () => { state.fields[k] = node.value; save(); });
+  }
+  if (!state.fields.date) { $("#f-date").value = new Date().toLocaleDateString(); state.fields.date = $("#f-date").value; }
+  $("#foot-date").textContent = new Date().toLocaleString();
+
+  // auto-fill build + env from /version (same source as the game's build bar)
+  fetch("/version").then(r => r.ok ? r.json() : null).then(v => {
+    if (!v) return;
+    if (!state.fields.build) { const b = `${v.version} · ${v.sha} · ${v.date}`; $("#f-build").value = b; state.fields.build = b; }
+    if (!state.fields.env)   { $("#f-env").value = v.env || "dev"; state.fields.env = v.env || "dev"; }
+    save();
+  }).catch(() => {});
+
+  // ---- copy chips -------------------------------------------------------
+  const CHIPS = ["http://localhost:8080", "angel.kenel+larry@gmail.com", "angel.kenel+john@gmail.com", "angel.kenel+testuser1@gmail.com"];
+  $("#chips").innerHTML = CHIPS.map(c => `<span class="chip" data-c="${c}">⧉ ${c}</span>`).join("");
+  $("#chips").addEventListener("click", (e) => {
+    const chip = e.target.closest(".chip"); if (!chip) return;
+    navigator.clipboard?.writeText(chip.dataset.c);
+    const old = chip.textContent; chip.textContent = "✓ copied"; setTimeout(() => chip.textContent = old, 900);
+  });
+
+  // ---- final verdict ----------------------------------------------------
+  document.querySelectorAll('input[name="final"]').forEach(radio => {
+    radio.checked = state.final === radio.value;
+    radio.addEventListener("change", () => { state.final = radio.value; save(); });
+  });
+
+  // ---- progress + clock -------------------------------------------------
+  function refresh() {
+    const total = liveIds.length;
+    let pass = 0, fail = 0;
+    for (const id of liveIds) { const v = (state.rows[id]||{}).v; if (v==="pass") pass++; else if (v==="fail") fail++; }
+    const done = pass + fail, left = total - done;
+    const pct = total ? Math.round(pass / total * 100) : 0;
+    $("#pct").textContent = pct + "%";
+    $("#tally").innerHTML = `<b style="color:var(--green)">${pass} pass</b> · <b style="color:var(--red)">${fail} fail</b> · ${left} left · ${total} live checks`;
+    $("#barfill").style.width = (total ? (done/total*100) : 0) + "%";
+    $("#barfill").style.background = fail ? "var(--red)" : "var(--green)";
+  }
+  function tickClock() {
+    const s = Math.floor((Date.now() - state.started) / 1000);
+    const mm = String(Math.floor(s/60)).padStart(2,"0"), ss = String(s%60).padStart(2,"0");
+    $("#clock").textContent = `⏱ ${mm}:${ss}`;
+  }
+  refresh(); tickClock(); setInterval(tickClock, 1000);
+
+  // ---- copy results -----------------------------------------------------
+  function resultsText() {
+    const f = state.fields;
+    let out = `${TEST_ID} — TIG · Tempest Phase 1 Quick Test\n`;
+    out += `Tester: ${f.tester||"—"}   Date: ${f.date||"—"}\n`;
+    out += `Build: ${f.build||"—"}   Env: ${f.env||"—"}\n`;
+    let pass=0, fail=0;
+    let n=0;
+    for (const c of CHECKS) {
+      if (c.s || c.preview) continue;
+      n++; const r = state.rows[c.id]||{};
+      const mark = r.v==="pass"?"PASS":r.v==="fail"?"FAIL":"—— ";
+      if (r.v==="pass") pass++; else if (r.v==="fail") fail++;
+      out += `  ${String(n).padStart(2)} [${mark}] ${c.id}${r.note?("  — "+r.note):""}\n`;
+    }
+    out += `\nResult: ${pass} pass · ${fail} fail · ${liveIds.length-pass-fail} left of ${liveIds.length}\n`;
+    out += `Overall verdict: ${state.final ? state.final.toUpperCase() : "(not set)"}\n`;
+    return out;
+  }
+  $("#copy").addEventListener("click", () => {
+    const t = resultsText();
+    navigator.clipboard?.writeText(t);
+    $("#out").textContent = t; $("#out").style.display = "block";
+    $("#copy").textContent = "✓ copied — paste it to Tig";
+    setTimeout(() => $("#copy").textContent = "📋 Copy results", 1200);
+  });
+  $("#toggleout").addEventListener("click", () => {
+    const o = $("#out"); o.textContent = resultsText();
+    o.style.display = o.style.display === "block" ? "none" : "block";
+  });
+  $("#reset").addEventListener("click", () => {
+    if (!confirm("Clear all verdicts and notes for this test?")) return;
+    localStorage.removeItem(KEY); location.reload();
+  });
+})();
+</script>
+</body>
+</html>
