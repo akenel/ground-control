@@ -17,3 +17,7 @@ scratch/
 .claude/settings.local.json
 .claude/*.tmp.*
 .aider*
+
+# Regenerate with: ./run-aider-ollama.sh --gen-metadata
+ollama-model-metadata.json
+ollama-model-settings.yml
