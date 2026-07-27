@@ -50,8 +50,27 @@ if [ "$LIST_ONLY" -eq 0 ]; then
 fi
 
 # ---------------------------------------------------------------- key
+KEY_FILE="$HOME/.ollama/api-key"
+
+# Read a secret without echoing it, showing one * per character so you can see
+# that a paste landed. Handles backspace; Enter ends it.
+read_secret() {
+  local prompt="$1" secret='' char
+  printf '%s' "$prompt" >&2
+  while IFS= read -rsn1 char; do
+    case "$char" in
+      '') break ;;                                    # Enter
+      $'\x7f'|$'\b')                                  # backspace
+        if [ -n "$secret" ]; then secret="${secret%?}"; printf '\b \b' >&2; fi ;;
+      *) secret+="$char"; printf '*' >&2 ;;
+    esac
+  done
+  printf '\n' >&2
+  printf '%s' "$secret"
+}
+
 if [ -z "${OLLAMA_API_KEY:-}" ]; then
-  for f in "$HOME/.ollama/api-key" "$HOME/.config/ollama/api-key"; do
+  for f in "$KEY_FILE" "$HOME/.config/ollama/api-key"; do
     if [ -r "$f" ]; then
       OLLAMA_API_KEY="$(tr -d '[:space:]' < "$f")"
       info "key loaded from $f"
@@ -59,9 +78,20 @@ if [ -z "${OLLAMA_API_KEY:-}" ]; then
     fi
   done
 fi
-[ -n "${OLLAMA_API_KEY:-}" ] || die "OLLAMA_API_KEY is not set.
-  export OLLAMA_API_KEY=...   or   echo '<key>' > ~/.ollama/api-key && chmod 600 ~/.ollama/api-key
+
+if [ -z "${OLLAMA_API_KEY:-}" ]; then
+  [ -t 0 ] || die "OLLAMA_API_KEY is not set and there is no terminal to ask on.
+  export OLLAMA_API_KEY=...   or   echo '<key>' > $KEY_FILE && chmod 600 $KEY_FILE
   Keys: https://ollama.com/settings/keys"
+
+  echo >&2
+  info "No Ollama.com API key found. Get one at https://ollama.com/settings/keys"
+  OLLAMA_API_KEY="$(read_secret 'paste key (hidden, shown as *): ')"
+  OLLAMA_API_KEY="$(printf '%s' "$OLLAMA_API_KEY" | tr -d '[:space:]')"
+  [ -n "$OLLAMA_API_KEY" ] || die "no key entered"
+  info "got ${#OLLAMA_API_KEY} characters"
+  KEY_IS_NEW=1
+fi
 export OLLAMA_API_KEY
 
 # Stop aider falling back to Claude / OpenAI creds that happen to be in the shell.
@@ -71,10 +101,14 @@ unset ANTHROPIC_API_KEY ANTHROPIC_API_BASE OPENAI_API_KEY OPENAI_API_BASE
 info "fetching model list from $TAGS_URL ..."
 RAW=""
 for attempt in 1 2 3; do
-  if RAW="$(curl -fsS --max-time 20 -H "Authorization: Bearer $OLLAMA_API_KEY" "$TAGS_URL")"; then
-    break
-  fi
-  RAW=""
+  resp="$(curl -sS --max-time 20 -w $'\n%{http_code}' \
+            -H "Authorization: Bearer $OLLAMA_API_KEY" "$TAGS_URL" 2>/dev/null)" || resp=""
+  code="${resp##*$'\n'}"
+  case "$code" in
+    200) RAW="${resp%$'\n'*}"; break ;;
+    401|403) die "Ollama.com rejected the key (HTTP $code). Check it at https://ollama.com/settings/keys" ;;
+    *) info "HTTP ${code:-no response} from $TAGS_URL" ;;
+  esac
   [ "$attempt" -lt 3 ] && { info "retry $attempt/3 ..."; sleep 2; }
 done
 [ -n "$RAW" ] || die "could not reach $TAGS_URL — check network / OLLAMA_CLOUD_HOST"
@@ -92,6 +126,42 @@ fi
 [ -n "$ROWS" ] || die "no models returned by $TAGS_URL"
 
 mapfile -t NAMES < <(printf '%s\n' "$ROWS" | cut -f1)
+
+# ---------------------------------------------------------------- verify a new key
+# /api/tags is public — it answers 200 for any key, so it proves nothing about
+# credentials. The chat endpoint is the only one that actually authenticates, so
+# a freshly pasted key gets probed there with a 1-token request.
+if [ "${KEY_IS_NEW:-0}" = "1" ]; then
+  PROBE_MODEL="$(printf '%s\n' "$ROWS" | awk -F'\t' '
+    $1=="gpt-oss:20b" {print $1; found=1; exit}
+    $2+0>0 {if (!s || $2+0<s) {s=$2+0; m=$1}}
+    END {if (!found && m) print m}')"
+  [ -n "$PROBE_MODEL" ] || PROBE_MODEL="${NAMES[0]}"
+  info "checking the key against $PROBE_MODEL ..."
+  probe_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+    -X POST "$OLLAMA_CLOUD_HOST/v1/chat/completions" \
+    -H "Authorization: Bearer $OLLAMA_API_KEY" -H 'Content-Type: application/json' \
+    -d "{\"model\":\"$PROBE_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
+    2>/dev/null)" || probe_code=""
+  case "$probe_code" in
+    200) info "key accepted" ;;
+    401|403) die "Ollama.com rejected that key (HTTP $probe_code). Check it at https://ollama.com/settings/keys" ;;
+    *) info "warning: could not verify the key (HTTP ${probe_code:-no response}) — carrying on anyway" ;;
+  esac
+
+  # Typed in by hand and working — offer to remember it.
+  if [ -t 0 ] && [ ! -e "$KEY_FILE" ] && [ "$probe_code" = "200" ]; then
+    read -r -p "save it to $KEY_FILE so you don't retype it? [y/N] " save_it
+    case "$save_it" in
+      [yY]*)
+        mkdir -p "$(dirname "$KEY_FILE")"
+        ( umask 077; printf '%s\n' "$OLLAMA_API_KEY" > "$KEY_FILE" )
+        chmod 600 "$KEY_FILE"
+        info "saved to $KEY_FILE (mode 600)" ;;
+      *) info "not saved — export OLLAMA_API_KEY to skip this next time" ;;
+    esac
+  fi
+fi
 
 fmt_row() { # name size modified -> pretty line
   awk -F'\t' '{
