@@ -4,8 +4,10 @@
 #
 #   ./run-aider-ollama.sh                    # fetch model list, pick one, launch
 #   ./run-aider-ollama.sh -l                 # just list what's available
-#   ./run-aider-ollama.sh kimi-k3            # skip the menu
-#   ./run-aider-ollama.sh kimi-k3 --yes src/ # everything after the model goes to aider
+#   ./run-aider-ollama.sh -l --check         # ... and mark which ones your plan can run
+#   ./run-aider-ollama.sh kimi-k2.6          # skip the menu
+#   ./run-aider-ollama.sh kimi-k2.6 --yes src/  # rest of the args go to aider
+#   ./run-aider-ollama.sh --no-check         # skip the pre-flight model check
 #
 # The API key is NOT stored in this file. Provide it via:
 #   export OLLAMA_API_KEY=...      (recommended — put it in ~/.zshrc)
@@ -33,8 +35,10 @@ AIDER_ARGS=()
 while [ $# -gt 0 ]; do
   case "$1" in
     -l|--list) LIST_ONLY=1; shift ;;
+    --check) CHECK_ALL=1; shift ;;   # not -c: that is aider's --config
+    -n|--no-check) NO_CHECK=1; shift ;;
     -m|--model) [ $# -ge 2 ] || die "--model needs a value"; MODEL_NAME="$2"; MODEL_EXPLICIT=1; shift 2 ;;
-    -h|--help) sed -n '3,15p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
+    -h|--help) sed -n '3,17p' "$0" | sed 's/^# \{0,1\}//'; exit 0 ;;
     --) shift; AIDER_ARGS+=("$@"); break ;;
     *)  # bare words are ambiguous (model name vs. a file for aider) — resolved
         # against the real catalogue further down
@@ -127,10 +131,22 @@ fi
 
 mapfile -t NAMES < <(printf '%s\n' "$ROWS" | cut -f1)
 
-# ---------------------------------------------------------------- verify a new key
-# /api/tags is public — it answers 200 for any key, so it proves nothing about
-# credentials. The chat endpoint is the only one that actually authenticates, so
-# a freshly pasted key gets probed there with a 1-token request.
+# ---------------------------------------------------------------- probing
+# The catalogue lists every model Ollama.com hosts, including ones your plan
+# cannot run: those answer 402 ("extra usage only ... balance is empty"). Only
+# the chat endpoint knows — /api/tags and /v1/models are public and answer 200
+# for any key and any model. So a 1-token request is the only real check, and
+# it doubles as key validation (401/403 = bad key).
+probe_model() { # name -> prints HTTP status
+  local code
+  code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
+    -X POST "$OLLAMA_CLOUD_HOST/v1/chat/completions" \
+    -H "Authorization: Bearer $OLLAMA_API_KEY" -H 'Content-Type: application/json' \
+    -d "{\"model\":\"$1\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
+    2>/dev/null)" || code=""
+  printf '%s' "$code"
+}
+
 if [ "${KEY_IS_NEW:-0}" = "1" ]; then
   PROBE_MODEL="$(printf '%s\n' "$ROWS" | awk -F'\t' '
     $1=="gpt-oss:20b" {print $1; found=1; exit}
@@ -138,13 +154,10 @@ if [ "${KEY_IS_NEW:-0}" = "1" ]; then
     END {if (!found && m) print m}')"
   [ -n "$PROBE_MODEL" ] || PROBE_MODEL="${NAMES[0]}"
   info "checking the key against $PROBE_MODEL ..."
-  probe_code="$(curl -s -o /dev/null -w '%{http_code}' --max-time 30 \
-    -X POST "$OLLAMA_CLOUD_HOST/v1/chat/completions" \
-    -H "Authorization: Bearer $OLLAMA_API_KEY" -H 'Content-Type: application/json' \
-    -d "{\"model\":\"$PROBE_MODEL\",\"messages\":[{\"role\":\"user\",\"content\":\"hi\"}],\"max_tokens\":1}" \
-    2>/dev/null)" || probe_code=""
+  probe_code="$(probe_model "$PROBE_MODEL")"
   case "$probe_code" in
-    200) info "key accepted" ;;
+    # 402 means the key authenticated fine, that model just isn't in the plan.
+    200|402) info "key accepted"; probe_code=200 ;;
     401|403) die "Ollama.com rejected that key (HTTP $probe_code). Check it at https://ollama.com/settings/keys" ;;
     *) info "warning: could not verify the key (HTTP ${probe_code:-no response}) — carrying on anyway" ;;
   esac
@@ -172,7 +185,35 @@ fmt_row() { # name size modified -> pretty line
 }
 
 if [ "$LIST_ONLY" -eq 1 ]; then
-  printf '%s\n' "$ROWS" | while IFS= read -r r; do fmt_row "$r"; done
+  if [ -z "${CHECK_ALL:-}" ]; then
+    printf '%s\n' "$ROWS" | while IFS= read -r r; do fmt_row "$r"; done
+    exit 0
+  fi
+
+  # Probe every model, 8 at a time, and say which ones this plan can actually run.
+  info "probing ${#NAMES[@]} models (1 token each) ..."
+  probe_dir="$(mktemp -d)"
+  trap 'rm -rf "$probe_dir"' EXIT
+  n=0
+  for name in "${NAMES[@]}"; do
+    probe_model "$name" > "$probe_dir/$n" &
+    n=$((n+1))
+    [ $((n % 8)) -eq 0 ] && wait
+  done
+  wait
+
+  n=0
+  while IFS= read -r r; do
+    case "$(cat "$probe_dir/$n" 2>/dev/null)" in
+      200)     status="ok" ;;
+      402)     status="extra usage only" ;;
+      401|403) status="key rejected" ;;
+      404)     status="not servable" ;;
+      *)       status="?" ;;
+    esac
+    printf '%s  %s\n' "$(fmt_row "$r")" "$status"
+    n=$((n+1))
+  done <<<"$ROWS"
   exit 0
 fi
 
@@ -190,19 +231,20 @@ if [ -z "$MODEL_NAME" ] && [ "${#AIDER_ARGS[@]}" -gt 0 ] && in_list "${AIDER_ARG
   AIDER_ARGS=("${AIDER_ARGS[@]:1}")
 fi
 
-if [ -z "$MODEL_NAME" ]; then
+pick_model() { # interactive chooser -> sets MODEL_NAME
   [ -t 0 ] || die "no model given and no terminal to ask on — pass one: $0 <model>"
 
   if [ -z "${NO_FZF:-}" ] && command -v fzf >/dev/null; then
+    local sel
     sel="$(printf '%s\n' "$ROWS" | while IFS= read -r r; do fmt_row "$r"; done \
       | fzf --prompt='ollama.com model > ' --height=60% --reverse \
             --header='name                          size   updated')" || true
     [ -n "$sel" ] || die "no model selected"
     MODEL_NAME="${sel%% *}"
   else
+    local i=0 r choice
     echo >&2
     printf '  %-3s %-24s %10s   %s\n' "#" "MODEL" "SIZE" "UPDATED" >&2
-    i=0
     while IFS= read -r r; do
       i=$((i+1))
       printf '  %-3s %s\n' "$i" "$(fmt_row "$r")" >&2
@@ -215,7 +257,28 @@ if [ -z "$MODEL_NAME" ]; then
     [ "$choice" -ge 1 ] && [ "$choice" -le "${#NAMES[@]}" ] || die "out of range: $choice"
     MODEL_NAME="${NAMES[$((choice-1))]}"
   fi
-fi
+}
+
+# Confirm the chosen model actually runs on this plan before handing over to
+# aider — otherwise a gated model only fails as a 402 retry-loop inside aider.
+while :; do
+  [ -n "$MODEL_NAME" ] || pick_model
+
+  if [ -n "${NO_CHECK:-}" ]; then break; fi
+
+  info "checking $MODEL_NAME ..."
+  case "$(probe_model "$MODEL_NAME")" in
+    200) break ;;
+    402)
+      info "'$MODEL_NAME' is not included in your Ollama.com plan (extra usage only,
+  and your extra-usage balance is empty). Add credit or turn on auto-reload at
+  https://ollama.com/settings — or pick a different model."
+      [ -t 0 ] && [ "$MODEL_EXPLICIT" -eq 0 ] || die "'$MODEL_NAME' can't run on this plan — try '$0 -l --check'"
+      MODEL_NAME=""; continue ;;
+    401|403) die "Ollama.com rejected the key. Check it at https://ollama.com/settings/keys" ;;
+    *) info "warning: could not pre-check $MODEL_NAME — launching anyway"; break ;;
+  esac
+done
 
 # ---------------------------------------------------------------- launch
 if [ "$AIDER_OLLAMA_MODE" = "native" ]; then
