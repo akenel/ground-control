@@ -15,7 +15,8 @@ Your job is to onboard them. Offer, in this order:
 1. **Ask what they're building** — a project, a business, a whole-life operation. Keep it to one or two questions.
 2. **Help them fill `kit/CLAUDE.template.md`** — walk them through the blanks (`<...>`), one section at a time. Write the filled version to *their* project as `CLAUDE.md`. Do not make them do it alone; that's the whole point.
 3. **Set up their memory folder** — following `kit/MEMORY-SYSTEM.md`: a `MEMORY.md` index plus one-fact-per-file memories.
-4. **Point them at `kit/STANDING-RULES.md`** — and start actually following those rules with them immediately, so they feel the difference in the first session.
+4. **Start their worklist** — using `kit/WORKLIST-TEMPLATE.md`. This is what their code word points at; without it the code word has nothing to open.
+5. **Point them at `kit/STANDING-RULES.md`** — and start actually following those rules with them immediately, so they feel the difference in the first session.
 
 Read `kit/worked-example.md` first so you can show them what a good loop looks like.
 
@@ -42,17 +43,32 @@ ground-control/
 │   ├── MEMORY-SYSTEM.md
 │   ├── WORKLIST-TEMPLATE.md
 │   └── worked-example.md
-│
-├── tig-tempest/      # the proof — a real project built on the spine, live at
-│                     # wolfhold.app/tempest. Has its own CLAUDE.md + WORKLIST + memory/.
-│                     # Read it as a worked example; it is not part of the kit.
-├── assets/           # README imagery
-└── run-aider-ollama.sh  # Angel's local tool for driving aider against Ollama.com models
+└── assets/           # README imagery
 ```
+
+That is the whole repo. There is deliberately nothing else.
+
+**The proof lives elsewhere, on purpose.** TIG · Tempest — a full arcade game built in one session
+on this spine — ships as a route inside [Freehold](https://github.com/akenel/freehold) and plays at
+[wolfhold.app/tempest](https://www.wolfhold.app/tempest). It used to live in this repo and it made
+the repo unreadable. If someone asks to see the method on a real project, send them there; don't
+copy it back in.
 
 ## Standing intent
 
 Keep this repo **tiny and pristine.** The value is that a stranger can read the whole thing in one sitting. Every file added dilutes it. Resist bloat. If it can't be explained in the README, it probably doesn't belong here.
+
+**The test:** everything here is either the kit, or the wrapper that explains the kit. Nothing else. A demo built with the kit is not the kit. A useful script that happens to live on the same machine is not the kit. Both get their own repo and a link.
+
+## Lessons (append-only)
+
+- **2026-08-14 — This repo drifted, twice, the same way.** A Tempest demo (~7,000 lines, a FastAPI
+  app, Docker compose, a Keycloak realm) and an unrelated aider/Ollama script accreted here until the
+  kit was under a tenth of its own repo. Both arrived for good reasons — *test the kit on something
+  real*, *keep the tool near where I'm working*. **Good reasons are exactly how bloat gets in;**
+  nothing arrives labelled "bloat." Removed to `freehold` and `aider-ollama` respectively. The demo
+  had also gone stale — the shipping copy of the game moved to another repo five weeks earlier, so
+  this one was serving a strictly worse version to anyone who followed the README.
 
 ---
 

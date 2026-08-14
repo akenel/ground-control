@@ -51,6 +51,7 @@ Not sure where to start? **Open this repo in your AI copilot and ask it to help 
 | [`kit/CLAUDE.template.md`](kit/CLAUDE.template.md) | The persistent-memory spine. Fill the blanks and your copilot loads your whole context every session. |
 | [`kit/STANDING-RULES.md`](kit/STANDING-RULES.md) | The operating contract — the rules that turn a clever assistant into a reliable partner. |
 | [`kit/MEMORY-SYSTEM.md`](kit/MEMORY-SYSTEM.md) | How to keep a growing file-based memory that doesn't rot — structure, index, hygiene. |
+| [`kit/WORKLIST-TEMPLATE.md`](kit/WORKLIST-TEMPLATE.md) | The handoff document — how to write a worklist your copilot can execute without guessing. |
 | [`kit/worked-example.md`](kit/worked-example.md) | One real loop, start to finish, so you can see the method before you trust it. |
 
 ## How the pieces fit
@@ -62,6 +63,8 @@ README ──────────► the pitch + quick start (you are here)
    │        │
    │        └─► STANDING-RULES ──► the discipline you paste in
    │
+   ├─► WORKLIST-TEMPLATE ► what the code word points at — the deck
+   │
    ├─► MEMORY-SYSTEM ────► how memory grows without rotting
    │
    └─► worked-example ───► proof it works, before you trust it
@@ -71,11 +74,11 @@ README ──────────► the pitch + quick start (you are here)
 
 This repo eats its own cooking. **TIG · Tempest** is a complete arcade game — a faithful tribute to the 1981 classic — built in a **single session** using nothing but the spine in this kit: a human steering, an AI copilot rowing, every step written to files.
 
-**[▶ Play it live → wolfhold.app/tempest](https://www.wolfhold.app/tempest)** — running on my own domain, deployed the *same day* it was built. *(Mirror: [GitHub Pages](https://akenel.github.io/ground-control/tig-tempest/game/).)*
+**[▶ Play it live → wolfhold.app/tempest](https://www.wolfhold.app/tempest)** — running on my own domain, deployed the *same day* it was built, and still serving.
 
-Then read its [context spine](tig-tempest/CLAUDE.md) and [build log](tig-tempest/WORKLIST.md) to see the method's fingerprints on a real thing — or watch the whole build happen, unedited, in the [**making-of session recording**](tig-tempest/worked-examples/session-01-tempest-in-a-day.md): empty folder to published game in one sitting.
+It doesn't live in this repo, and that's the point. Tempest ships as a route inside [**Freehold**](https://github.com/akenel/freehold), the real system it belongs to — spine, worklist, memory files and all. Ground Control stays the kit; the proof lives where it runs.
 
-*Accounts + a live leaderboard are coming — soon you'll sign in with GitHub or Google and climb the ranks. Star the repo to catch it.*
+*A kit you can read in one sitting is worth more than a kit padded with the things it built.*
 
 ## The one rule that makes it all work
 

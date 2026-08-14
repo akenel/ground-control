@@ -16,13 +16,6 @@ scratch/
 # Claude local settings + write-temp files
 .claude/settings.local.json
 .claude/*.tmp.*
+
+# Aider scratch, if you drive this repo with it
 .aider*
-
-# Regenerate with: ./run-aider-ollama.sh --gen-metadata
-ollama-model-metadata.json
-ollama-model-settings.yml
-
-# Tempest app — local build stamp (stamped at deploy) + python caches
-tig-tempest/app/build-sha.txt
-__pycache__/
-*.pyc
