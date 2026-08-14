@@ -19,12 +19,53 @@
     font: 12px/1.4 "Courier New", monospace; color: #64748b; letter-spacing: 2px;
     pointer-events: none;
   }
+  #buildbar {
+    position: fixed; bottom: 12px; right: 14px;
+    font: 11px/1.4 "Courier New", monospace; color: #22d3ee; opacity: .55;
+    letter-spacing: 1px; text-shadow: 0 0 6px #22d3ee55;
+    pointer-events: none; user-select: none;
+  }
+  #devbar {
+    position: fixed; bottom: 12px; left: 14px; display: none;
+    font: 11px/1.4 "Courier New", monospace; color: #f59e0b; opacity: .95;
+    letter-spacing: 1px; text-shadow: 0 0 6px #f59e0b88;
+    background: rgba(20,14,2,.55); padding: 3px 8px; border-radius: 6px;
+    border: 1px solid #f59e0b44; pointer-events: none; user-select: none;
+  }
+  #cheat {
+    position: fixed; top: 44px; left: 0; right: 0; text-align: center;
+    font: 20px/1.2 "Courier New", monospace; color: #f59e0b; letter-spacing: 3px;
+    text-shadow: 0 0 12px #f59e0baa; pointer-events: none; opacity: 0;
+    transition: opacity .2s; user-select: none;
+  }
+  #who {
+    position: fixed; top: 12px; left: 50%; transform: translateX(-50%);
+    font: 12px/1.4 "Courier New", monospace; color: #22d3ee; letter-spacing: 1px;
+    text-shadow: 0 0 6px #22d3ee55; user-select: none; z-index: 5;
+  }
+  #who a { color: #f59e0b; text-decoration: none; }
 </style>
 </head>
 <body>
 <div id="hud"><span id="score">SCORE 000000</span><span id="zap">ZAP ×2</span><span id="lives">LIVES ♦ ♦ ♦</span></div>
 <canvas id="game"></canvas>
 <div id="hint">MOVE MOUSE — RIDE THE RIM · CLICK/HOLD — FIRE · SPACE — SUPERZAPPER · M — MUTE</div>
+<div id="buildbar">BUILD dev</div>
+<div id="devbar"></div>
+<div id="cheat"></div>
+<div id="who"></div>
+<script>
+  // Build bar — the running build's number · SHA · date, from the app's /version
+  // endpoint (freehold-style branding, always visible incl. the title screen).
+  // Served by the app → shows the real stamp; opened as a bare file with no
+  // endpoint → stays "BUILD dev", honestly.
+  fetch("/version").then((r) => (r.ok ? r.json() : null)).then((v) => {
+    if (!v) return;
+    const parts = [v.version, v.sha, v.date].filter(Boolean).join("  ·  ");
+    const env = v.env && v.env !== "production" ? "  ·  " + String(v.env).toUpperCase() : "";
+    document.getElementById("buildbar").textContent = "BUILD " + parts + env;
+  }).catch(() => {});
+</script>
 <script>
 (() => {
   "use strict";
@@ -69,6 +110,13 @@
   let score = 0;
   let lives = 3;
   let mode = "title";           // "title" | "play" | "over"
+  // Dev/test cheats — ON only on localhost, dev-/stg- hosts, or ?dev=1.
+  // OFF on production (tempest.wolfhold.app) and GitHub Pages, so real players never see them.
+  const dev = {
+    on: /[?&]dev=1\b/.test(location.search) ||
+        /^(localhost$|127\.|dev-|stg-)/.test(location.hostname),
+    god: false,                 // toggled invincible (key 0)
+  };
   let ticks = 0;                // global frame counter (blink / spin)
   let muted = false;
   let lastRank = -1;            // rank of the just-finished run in the high-score table
@@ -97,10 +145,13 @@
   const SPIKE_ERODE = 0.09;     // how much of a spike a single bolt knocks back
   const SPIKE_DANGER = 0.45;    // spike tip below this depth is lethal on the dive
 
+  let account = null;            // {username, name, ...} from /me when signed in, else null
+  let gameStartMs = 0;           // for run duration
+
   function startGame() {
     score = 0; lives = 3; firing = false; fireCd = 0;
     zapFlash = 0; hurtFlash = 0; level = 1; zooming = false; zoomT = 0;
-    lastRank = -1; mode = "play";
+    lastRank = -1; mode = "play"; gameStartMs = Date.now();
     startWave();
     sfx.start();
   }
@@ -108,6 +159,7 @@
   function endGame() {
     mode = "over"; firing = false;
     recordScore(score, level);
+    submitScore(score, level, Date.now() - gameStartMs);   // to the leaderboard, if signed in
     sfx.gameover();
   }
 
@@ -166,7 +218,7 @@
 
   function startZoom() {
     // crashing into a tall spike on your lane costs a life
-    if (spikes[playerLane] < SPIKE_DANGER) {
+    if (spikes[playerLane] < SPIKE_DANGER && !dev.god) {
       lives--; hurtFlash = 12; sfx.hurt();
       if (lives <= 0) { endGame(); return; }
     }
@@ -212,6 +264,20 @@
   window.addEventListener("mouseup", () => { firing = false; });
   window.addEventListener("blur", () => { firing = false; });
   window.addEventListener("keydown", (e) => {
+    if (dev.on) {
+      const d = e.code;
+      if (d >= "Digit1" && d <= "Digit9") {              // jump straight to level N (test without grinding)
+        if (mode !== "play") startGame();
+        level = +d.slice(5); startWave(); cheatToast("LEVEL " + level); renderDevBar(); return;
+      }
+      if (d === "Equal" || d === "NumpadAdd") { lives++; cheatToast("+1 LIFE  ×" + lives); return; }
+      if (d === "Digit0") { dev.god = !dev.god; cheatToast(dev.god ? "GOD MODE ON" : "GOD MODE OFF"); renderDevBar(); return; }
+      if (d === "Backslash") { if (mode === "play") { endGame(); cheatToast("FORCE GAME OVER"); } return; }
+      if (mode === "play") {                              // spawn one of a specific enemy, on demand
+        const spawn = { KeyF: "flipper", KeyS: "spiker", KeyT: "tanker", KeyB: "fuseball", KeyP: "pulsar" }[d];
+        if (spawn) { spawnEnemy(spawn); cheatToast("SPAWN " + spawn.toUpperCase()); return; }
+      }
+    }
     if (e.code === "KeyM") { muted = !muted; return; }   // mute toggle
     if (e.code === "Space") {
       e.preventDefault();
@@ -230,23 +296,25 @@
     return best;
   }
 
-  function spawnEnemy() {
-    const r = Math.random();
-    let type = "flipper";
-    if (level >= 5) {
-      if (r < 0.14) type = "pulsar";
-      else if (r < 0.28) type = "fuseball";
-      else if (r < 0.44) type = "tanker";
-      else if (r < 0.64) type = "spiker";
-    } else if (level >= 4) {
-      if (r < 0.16) type = "fuseball";
-      else if (r < 0.34) type = "tanker";
-      else if (r < 0.56) type = "spiker";
-    } else if (level >= 3) {
-      if (r < 0.20) type = "tanker";
-      else if (r < 0.48) type = "spiker";
-    } else if (level >= 2 && r < 0.30) {
-      type = "spiker";
+  function spawnEnemy(forceType) {
+    let type = forceType || "flipper";
+    if (!forceType) {
+      const r = Math.random();
+      if (level >= 5) {
+        if (r < 0.14) type = "pulsar";
+        else if (r < 0.28) type = "fuseball";
+        else if (r < 0.44) type = "tanker";
+        else if (r < 0.64) type = "spiker";
+      } else if (level >= 4) {
+        if (r < 0.16) type = "fuseball";
+        else if (r < 0.34) type = "tanker";
+        else if (r < 0.56) type = "spiker";
+      } else if (level >= 3) {
+        if (r < 0.20) type = "tanker";
+        else if (r < 0.48) type = "spiker";
+      } else if (level >= 2 && r < 0.30) {
+        type = "spiker";
+      }
     }
     const e = { type, lane: Math.floor(Math.random() * LANES), d: 1, flipCd: 40 + Math.random() * 40 };
     if (type === "fuseball") { e.driftCd = 18 + Math.random() * 22; e.armored = false; e.armorCd = 30 + Math.random() * 20; }
@@ -499,7 +567,7 @@
   function updateHud() {
     scoreEl.textContent = "LVL " + level + "  SCORE " + String(score).padStart(6, "0");
     zapEl.textContent = "ZAP " + (zaps > 0 ? "×" + zaps : "—");
-    livesEl.textContent = "LIVES " + (lives > 0 ? "♦ ".repeat(lives).trim() : "—");
+    livesEl.textContent = "LIVES " + (lives <= 0 ? "—" : lives > 5 ? "♦ ×" + lives : "♦ ".repeat(lives).trim());
   }
 
   function fireAndMoveBullets() {
@@ -574,8 +642,8 @@
       if (e.type !== "pulsar") continue;
       const hot = Math.sin(e.pulse) > 0.75;
       if (hot && !e.zappedThisPulse && playerLane === e.lane) {
-        lives--; hurtFlash = 12; sfx.hurt(); e.zappedThisPulse = true;
-        if (lives <= 0) endGame();
+        e.zappedThisPulse = true;
+        if (!dev.god) { lives--; hurtFlash = 12; sfx.hurt(); if (lives <= 0) endGame(); }
       }
       if (!hot) e.zappedThisPulse = false;
     }
@@ -596,8 +664,8 @@
     // enemy reached the rim -> costs a life
     for (const e of enemies) {
       if (e.d <= 0 && !e.dead) {
-        e.dead = true; lives--; hurtFlash = 12; sfx.hurt();
-        if (lives <= 0) endGame();
+        e.dead = true;
+        if (!dev.god) { lives--; hurtFlash = 12; sfx.hurt(); if (lives <= 0) endGame(); }
       }
     }
 
@@ -617,6 +685,8 @@
 
     hudEl.style.display = mode === "title" ? "none" : "";
     hintEl.style.display = mode === "play" ? "" : "none";
+    const whoEl = document.getElementById("who");
+    if (whoEl) whoEl.style.display = mode === "title" ? "" : "none";   // sign-in prompt: attract screen only
 
     if (mode === "title") { drawTitle(); requestAnimationFrame(frame); return; }
 
@@ -643,6 +713,46 @@
     if (mode === "over") drawGameOver();
     requestAnimationFrame(frame);
   }
+  // --- account / server sync (Phase 4) ----------------------------------
+  function renderWho() {
+    const el = document.getElementById("who");
+    if (!el) return;
+    el.innerHTML = account
+      ? 'PLAYER <b>' + account.name + '</b> · <a href="/dashboard">DASHBOARD</a> · <a href="/leaderboard">LEADERBOARD</a>'
+      : '<a href="/login">▶ SIGN IN</a> to save your scores · <a href="/leaderboard">LEADERBOARD</a>';
+  }
+  function pingPresence() {
+    fetch("/api/ping", { method: "POST", credentials: "same-origin" }).catch(() => {});
+  }
+  function submitScore(points, level, durationMs) {
+    if (!account) return;                       // anonymous run — local high score only
+    fetch("/api/scores", {
+      method: "POST", credentials: "same-origin",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ points, level, waves: level, duration_ms: durationMs }),
+    }).catch(() => {});
+  }
+  fetch("/me", { credentials: "same-origin" }).then((r) => (r.ok ? r.json() : Promise.reject())).then((d) => {
+    account = d && d.user ? d.user : null;
+    renderWho();                                // signed in → greet; signed out → SIGN IN link
+    if (account) { pingPresence(); setInterval(pingPresence, 20000); }  // heartbeat while the tab is open
+  }).catch(() => {});                           // no /me endpoint (static hosting) → no account UI
+
+  function cheatToast(msg) {
+    const el = document.getElementById("cheat");
+    if (!el) return;
+    el.textContent = msg; el.style.opacity = "1";
+    clearTimeout(el._t); el._t = setTimeout(() => { el.style.opacity = "0"; }, 900);
+  }
+  function renderDevBar() {
+    const el = document.getElementById("devbar");
+    if (!el) return;
+    if (!dev.on) { el.style.display = "none"; return; }
+    el.style.display = "";
+    el.textContent = "DEV  1-9 LEVEL · = LIFE · 0 GOD" + (dev.god ? " ✦ON" : "") +
+                     " · F/S/T/B/P SPAWN · \\ OVER";
+  }
+  renderDevBar();
   frame();
 })();
 </script>

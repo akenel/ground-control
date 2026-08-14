@@ -1,0 +1,66 @@
+{
+  "realm": "tempest-sbx",
+  "enabled": true,
+  "displayName": "TEMPEST · Sandbox",
+  "displayNameHtml": "<b>TEMPEST</b> · Sandbox",
+  "sslRequired": "none",
+  "registrationAllowed": true,
+  "registrationEmailAsUsername": false,
+  "loginWithEmailAllowed": true,
+  "duplicateEmailsAllowed": false,
+  "resetPasswordAllowed": true,
+  "rememberMe": true,
+  "bruteForceProtected": true,
+  "roles": {
+    "realm": [
+      { "name": "admin", "description": "Full access — moderate the leaderboard" },
+      { "name": "player", "description": "A Tempest player" }
+    ]
+  },
+  "clients": [
+    {
+      "clientId": "tempest-web",
+      "name": "TIG · Tempest (web)",
+      "enabled": true,
+      "protocol": "openid-connect",
+      "publicClient": false,
+      "clientAuthenticatorType": "client-secret",
+      "secret": "tempest-dev-secret-change-me",
+      "standardFlowEnabled": true,
+      "directAccessGrantsEnabled": true,
+      "redirectUris": [
+        "http://localhost:8080/*",
+        "https://dev-tempest.wolfhold.app/*"
+      ],
+      "webOrigins": [
+        "http://localhost:8080",
+        "https://dev-tempest.wolfhold.app"
+      ],
+      "attributes": {
+        "post.logout.redirect.uris": "http://localhost:8080/*##https://dev-tempest.wolfhold.app/*"
+      }
+    }
+  ],
+  "users": [
+    {
+      "username": "demo",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "demo@tempest.local",
+      "firstName": "Demo",
+      "lastName": "Player",
+      "credentials": [{ "type": "password", "value": "demo", "temporary": false }],
+      "realmRoles": ["player"]
+    },
+    {
+      "username": "cap",
+      "enabled": true,
+      "emailVerified": true,
+      "email": "cap@tempest.local",
+      "firstName": "The",
+      "lastName": "Captain",
+      "credentials": [{ "type": "password", "value": "cap", "temporary": false }],
+      "realmRoles": ["admin", "player"]
+    }
+  ]
+}

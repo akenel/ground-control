@@ -1,0 +1,40 @@
+# TIG · Tempest — LOCAL dev overlay: a throwaway Keycloak so login works on
+# localhost. On the box you use the shared auth.wolfhold.app instead (sbx overlay),
+# so this Keycloak is dev-only and never runs in production.
+#
+# Local dev (auth included):
+#   docker compose -f docker-compose.yml -f docker-compose.dev.yml up -d --build
+# Then log in at http://localhost:8080/login  (demo/demo player · cap/cap admin).
+services:
+  tempest-kc:
+    image: quay.io/keycloak/keycloak:26.0
+    command: ["start-dev", "--import-realm"]   # dev H2 store; imports the realm on boot
+    environment:
+      KC_BOOTSTRAP_ADMIN_USERNAME: admin
+      KC_BOOTSTRAP_ADMIN_PASSWORD: admin
+      KC_HTTP_ENABLED: "true"
+      KC_HEALTH_ENABLED: "true"
+      KC_HOSTNAME_STRICT: "false"
+      # Fixed frontend URL → deterministic token issuer; backchannel dynamic lets
+      # the app reach KC internally at tempest-kc:8080 while the issuer stays localhost:8082.
+      KC_HOSTNAME: http://localhost:8082
+      KC_HOSTNAME_BACKCHANNEL_DYNAMIC: "true"
+    volumes:
+      - ./keycloak/realms:/opt/keycloak/data/import:ro
+    ports:
+      - "127.0.0.1:8082:8080"     # browser reaches KC here; admin console at /admin (admin/admin)
+    healthcheck:
+      test: ["CMD-SHELL", "exec 3<>/dev/tcp/localhost/9000"]
+      interval: 10s
+      timeout: 5s
+      retries: 24
+      start_period: 45s
+
+  tempest-app:
+    environment:
+      KC_PUBLIC_URL: http://localhost:8082
+      KC_INTERNAL_URL: http://tempest-kc:8080
+      KC_REALM: tempest-sbx
+    depends_on:
+      tempest-kc:
+        condition: service_started
