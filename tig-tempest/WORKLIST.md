@@ -13,20 +13,29 @@ Angel human-green'd it (played to LVL 4, high scores saved, green padlock, build
 route + nav link, Robot-style) — simpler, no separate app/container/DNS. See [[deploy-ritual]].
 
 **Next on deck (do fresh, NOT tired — each is a prod deploy → use the two-part ritual):**
-1. **"Back to Freehold" escape hatch** — 🟡 **BUILT, AT THE GATE (2026-08-14).** Committed in the
-   **freehold** repo as `c69795a`: dim `← FREEHOLD` link bottom-left + **Esc**, both to the same
-   target, `ESC — EXIT` added to the hint line. Target adapts — `/dashboard` when signed in, `/`
-   when anonymous (*`/dashboard` bounces anonymous players to `/login`, a worse dead-end than the
-   one we're fixing*). Devbar moved to `bottom:36px`; the link swallows mousedown so clicking it
-   doesn't fire a shot. Both inline `<script>` blocks node-checked OK.
-   **Flight scripts committed:** `freehold/ops/tempest-escape-preflight.sh` (look-only, prints
-   GO/NO-GO) and `.../-postflight.sh` (greps the **served** page for the markers, so a stale
-   container can't pass as deployed). **Awaiting: push freehold → `git pull` on the box → run
-   pre-flight → Angel says "deploy" → `make deploy ENV=production` → post-flight → human-green.**
+1. **"Back to Freehold" escape hatch** — 🟢 **DEPLOYED 2026-08-14, build `b120 · 0fce1f7`.**
+   Machine-green 100% (post-flight). **Awaiting Angel's human-green.** Dim `← FREEHOLD` link
+   bottom-left + **Esc**, `ESC — EXIT` on the hint line. Devbar moved to `bottom:36px`; the link
+   swallows mousedown so clicking it doesn't fire a shot. Full gated run: pre-flight GO → gate →
+   `promote.py production` (backup gate + 156 tests passed) → post-flight ✅ → human-green pending.
+   *Human-green check: link visible bottom-left, goes amber on hover, doesn't block the ship or eat
+   shots; click and Esc both land on Freehold.*
 2. **Tidy-up:** remove the leftover `dev-tempest` block from the box's `Caddyfile.prod`
-   (`git checkout -- Caddyfile.prod` on the box) so ACME stops trying to cert an unused host.
-3. **Online leaderboard (optional, big):** wire the game's high scores to Freehold's EXISTING
+   so ACME stops trying to cert an unused host. ⚠️ **Corrected 2026-08-14:** `git checkout --
+   Caddyfile.prod` will NOT do it — the block is **committed** at `Caddyfile.prod:100-101`
+   (`@devtempest host dev-tempest.{$BASE_DOMAIN:wolfhold.app}`), and the box's tree is clean.
+   This is a real edit + commit + `promote.py`, not a checkout.
+3. **The tempest page's server side never shipped.** `freehold/app/static/tempest.html` carries
+   Phase 4/5 client code — `fetch("/me")`, `/api/ping`, `/api/scores`, links to `/leaderboard` —
+   but **freehold serves none of those routes** (they were built in `tig-tempest/app/`, the
+   superseded standalone app). It fails silently by design (the `.catch()`), so nothing is broken:
+   `account` stays `null`, the `#who` bar never renders, no dead link is ever shown. But it means
+   **no score submission, no presence, no account greeting**, and the escape hatch's `/dashboard`
+   branch is dormant. *Smallest unlock: a ~10-line `GET /me` returning `{"user": …}` from
+   `deps.current_user(request)` — that alone lights up the greeting and the signed-in hatch target.*
+4. **Online leaderboard (optional, big):** wire the game's high scores to Freehold's EXISTING
    Postgres + Keycloak login (no separate tempest-app needed — the subdomain SBX plan is superseded).
+   Item 3 is the first brick of this.
 
 **Deploy discipline (learned hard 2026-07-09):** every prod change = PRE-FLIGHT → gate → fix → POST-FLIGHT.
 Freehold gotcha: Caddy MUST start with the prod overlay (`docker-compose.prod.yml`) so it gets
