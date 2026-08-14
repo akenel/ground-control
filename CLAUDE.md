@@ -36,11 +36,18 @@ ground-control/
 ├── README.md         # the landing page / pitch
 ├── CLAUDE.md         # this file — onboards a copilot opening the repo
 ├── LICENSE           # CC BY 4.0
-└── kit/              # the deliverable — the four files a user copies
-    ├── CLAUDE.template.md
-    ├── STANDING-RULES.md
-    ├── MEMORY-SYSTEM.md
-    └── worked-example.md
+├── kit/              # the deliverable — the files a user copies
+│   ├── CLAUDE.template.md
+│   ├── STANDING-RULES.md
+│   ├── MEMORY-SYSTEM.md
+│   ├── WORKLIST-TEMPLATE.md
+│   └── worked-example.md
+│
+├── tig-tempest/      # the proof — a real project built on the spine, live at
+│                     # wolfhold.app/tempest. Has its own CLAUDE.md + WORKLIST + memory/.
+│                     # Read it as a worked example; it is not part of the kit.
+├── assets/           # README imagery
+└── run-aider-ollama.sh  # Angel's local tool for driving aider against Ollama.com models
 ```
 
 ## Standing intent

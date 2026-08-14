@@ -1,5 +1,16 @@
 # DEPLOY — Tempest → SBX (dev-tempest.wolfhold.app)
 
+> ## ⚠️ SUPERSEDED — reference only, do not run
+>
+> This runbook stands up the standalone `tempest-app` on `dev-tempest.wolfhold.app`.
+> **That path was abandoned.** Tempest is live as a route inside Freehold at
+> **https://www.wolfhold.app/tempest** — see `CLAUDE.md` → CURRENT SITUATION.
+>
+> Running this would create a container and a Caddy block you'd then have to clean up.
+> (Indeed: removing the leftover `dev-tempest` block from the box's `Caddyfile.prod` is an
+> open item on `WORKLIST.md`.) The sibling script `deploy-box-sbx.sh` is superseded for the
+> same reason. *(Banner added 2026-08-14.)*
+
 *Runbook you run **on the wolfhold box** (167.233.125.248), not the laptop. Own
 stack (app + Postgres + MinIO), shared front door (freehold's Caddy) and shared
 Keycloak (`auth.wolfhold.app`). Real HTTPS, $0. Gets Phases 1–5 live: the game +

@@ -1,5 +1,23 @@
 # GO-LIVE — Tempest online (accounts · leaderboard · three environments)
 
+> ## ⚠️ SUPERSEDED — reference only, do not execute
+>
+> **Tempest went live on 2026-07-09 as a ROUTE INSIDE FREEHOLD**, not as the standalone
+> app on its own subdomain that this document specifies. It plays at
+> **https://www.wolfhold.app/tempest** — `freehold/app/static/tempest.html` +
+> `freehold/app/routers/tempest.py` + a nav link. No separate container, no separate DNS.
+>
+> Phases 1–5 below *were* built (they live in `app/`) and are good code to harvest, but
+> they are **not in production**. Do not start at §13.1 and do not stand up
+> `dev-tempest.wolfhold.app`.
+>
+> **Still valuable here:** §3 (data model), §7 (score integrity — the anti-cheat thinking
+> holds no matter where the leaderboard lives), §8 (presence via heartbeat), §9 (seeded RNG
+> + the seed-challenge idea), §12 (the gaps list). Read those; ignore the deploy topology.
+>
+> Current truth: `CLAUDE.md` → CURRENT SITUATION, and `memory/freehold-caddy-sop.md`.
+> *(Banner added 2026-08-14, when the branch was merged to main.)*
+
 *Handoff spec for the build terminal (Tig). Written from a detailed read of the
 `freehold` reference stack — we **cherry-pick freehold's proven patterns**, we do
 not reinvent them. This file is the plan; the worklist item at the bottom is the
