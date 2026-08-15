@@ -16,7 +16,7 @@ Ground Control fixes that. It's a tiny starter kit — a handful of files you co
 - **Holds the standard** — a written contract of operating rules it must follow, every time
 - **Stays under your control** — you steer, it rows; you never hand over the wheel
 
-No app. No subscription. No account. Five files and a habit.
+No app. No subscription. No account. No vendor. Five files and a habit.
 
 ## Who it's for
 
@@ -69,6 +69,25 @@ README ──────────► the pitch + quick start (you are here)
    │
    └─► worked-example ───► proof it works, before you trust it
 ```
+
+## It isn't just for one tool — the file has many names
+
+Every serious AI coding agent now reads a project context file. They just disagree on what to call it:
+
+| Where you work | What the file is called |
+|---|---|
+| Claude Code | `CLAUDE.md` |
+| Codex, Gemini CLI, opencode, goose, Cursor, Zed, Copilot, Devin, Windsurf, Junie… | **`AGENTS.md`** — [an open format](https://agents.md/), used by 60k+ projects |
+| Aider | `CONVENTIONS.md` — *and* `AGENTS.md` |
+| Open-WebUI, LM Studio, any chat UI | the model's **system prompt** field |
+
+Same job in all of them: *load who you are and how you work, before the conversation starts.*
+
+**The filename is the easy part. Knowing what to put in it is the whole problem** — and that's what this kit is. `kit/CLAUDE.template.md` is a template for that file whatever your tool calls it. Save it as `AGENTS.md`, paste it into a system prompt box, keep both — it's the same content doing the same work.
+
+> **Tested, not assumed.** The same spine has been run three ways: as `CLAUDE.md` in Claude Code, as an Open-WebUI system prompt against a hosted model, and as `CONVENTIONS.md` driving [Aider](https://aider.chat) with Qwen on Ollama. Three tools, three vendors, one file. In the terminal test it went from silently writing pointless code to *"I need to push back on this request"* — same model, same settings, **only the spine changed.**
+
+If you switch tools next year, you rewrite one filename. That's the point of owning your context instead of renting it.
 
 ## ▶ Built with this method — play it
 
