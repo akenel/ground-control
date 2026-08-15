@@ -42,7 +42,7 @@ Or just click **"Use this template"** at the top of this page. Then:
 4. **Set up your memory folder** — follow `kit/MEMORY-SYSTEM.md`. One fact per file, one index line each.
 5. **Work.** When something's decided, write it to memory. When context changes, update the file. Never re-explain the same thing twice.
 
-Not sure where to start? **Open this repo in your AI copilot and ask it to help you set up.** This repo is built to onboard you (see `CLAUDE.md`) — it's a working example of the method it teaches.
+Not sure where to start? **Open this repo in your AI agent and ask it to help you set up.** This repo carries its own [`AGENTS.md`](AGENTS.md), so Claude Code, Codex, Cursor, aider and the rest all arrive already knowing what this is and how to onboard you — it's a working example of the method it teaches.
 
 ## What's in the box
 
