@@ -1,6 +1,8 @@
-# CLAUDE.md — Persistent Context Template
+# Persistent Context Template
 
 *This file loads every session. It is your copilot's permanent memory. Fill every `<...>` blank, delete what you don't need, and keep it current.*
+
+**Save it under whatever name your tool reads:** `AGENTS.md` for Codex, Gemini CLI, opencode, goose, Cursor, Zed, Copilot, Aider and [most others](https://agents.md/) · `CLAUDE.md` for Claude Code · or paste the contents straight into the **system prompt** box of a chat UI. Same content, same job — keep two copies if you use two tools.
 
 ---
 
@@ -60,7 +62,7 @@ Keep this short and true. Update it when reality changes.
 ```
 <root>/
 ├── <worklist file>        # what's next, in order
-├── CLAUDE.md              # this file (persistent memory)
+├── AGENTS.md              # this file (persistent memory / the spine)
 ├── <memory folder>/       # one fact per file + index
 └── <where the work lives>
 ```

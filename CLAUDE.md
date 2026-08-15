@@ -13,7 +13,7 @@
 Your job is to onboard them. Offer, in this order:
 
 1. **Ask what they're building** — a project, a business, a whole-life operation. Keep it to one or two questions.
-2. **Help them fill `kit/CLAUDE.template.md`** — walk them through the blanks (`<...>`), one section at a time. Write the filled version to *their* project as `CLAUDE.md`. Do not make them do it alone; that's the whole point.
+2. **Help them fill `kit/AGENTS.template.md`** — walk them through the blanks (`<...>`), one section at a time. Write the filled version to *their* project as `AGENTS.md` (or `CLAUDE.md`, or a system prompt — ask which tool they use). Do not make them do it alone; that's the whole point.
 3. **Set up their memory folder** — following `kit/MEMORY-SYSTEM.md`: a `MEMORY.md` index plus one-fact-per-file memories.
 4. **Start their worklist** — using `kit/WORKLIST-TEMPLATE.md`. This is what their code word points at; without it the code word has nothing to open.
 5. **Point them at `kit/STANDING-RULES.md`** — and start actually following those rules with them immediately, so they feel the difference in the first session.
@@ -38,7 +38,7 @@ ground-control/
 ├── CLAUDE.md         # this file — onboards a copilot opening the repo
 ├── LICENSE           # CC BY 4.0
 ├── kit/              # the deliverable — the files a user copies
-│   ├── CLAUDE.template.md
+│   ├── AGENTS.template.md
 │   ├── STANDING-RULES.md
 │   ├── MEMORY-SYSTEM.md
 │   ├── WORKLIST-TEMPLATE.md

@@ -36,9 +36,9 @@ gh repo create my-project --template akenel/ground-control --private --clone
 
 Or just click **"Use this template"** at the top of this page. Then:
 
-1. **Copy `kit/CLAUDE.template.md`** into your own project as `CLAUDE.md` (or your copilot's memory file).
+1. **Copy `kit/AGENTS.template.md`** into your own project as `AGENTS.md` — or `CLAUDE.md`, or whatever file your tool reads ([see below](#it-isnt-just-for-one-tool--the-file-has-many-names)).
 2. **Fill the blanks** — who you are, what you're building, the paths that matter. ~30 minutes, once.
-3. **Paste in the rules** — drop `kit/STANDING-RULES.md` into your `CLAUDE.md`. These are the non-negotiables.
+3. **Paste in the rules** — drop `kit/STANDING-RULES.md` into that same spine file. These are the non-negotiables.
 4. **Set up your memory folder** — follow `kit/MEMORY-SYSTEM.md`. One fact per file, one index line each.
 5. **Work.** When something's decided, write it to memory. When context changes, update the file. Never re-explain the same thing twice.
 
@@ -48,7 +48,7 @@ Not sure where to start? **Open this repo in your AI copilot and ask it to help 
 
 | File | What it does |
 |------|--------------|
-| [`kit/CLAUDE.template.md`](kit/CLAUDE.template.md) | The persistent-memory spine. Fill the blanks and your copilot loads your whole context every session. |
+| [`kit/AGENTS.template.md`](kit/AGENTS.template.md) | The persistent-memory spine. Fill the blanks and your copilot loads your whole context every session. Save it as `AGENTS.md`, `CLAUDE.md`, or a system prompt. |
 | [`kit/STANDING-RULES.md`](kit/STANDING-RULES.md) | The operating contract — the rules that turn a clever assistant into a reliable partner. |
 | [`kit/MEMORY-SYSTEM.md`](kit/MEMORY-SYSTEM.md) | How to keep a growing file-based memory that doesn't rot — structure, index, hygiene. |
 | [`kit/WORKLIST-TEMPLATE.md`](kit/WORKLIST-TEMPLATE.md) | The handoff document — how to write a worklist your copilot can execute without guessing. |
@@ -59,7 +59,7 @@ Not sure where to start? **Open this repo in your AI copilot and ask it to help 
 ```
 README ──────────► the pitch + quick start (you are here)
    │
-   ├─► CLAUDE.template ──► the spine you fill in (30 min, once)
+   ├─► AGENTS.template ──► the spine you fill in (30 min, once)
    │        │
    │        └─► STANDING-RULES ──► the discipline you paste in
    │
@@ -83,7 +83,7 @@ Every serious AI coding agent now reads a project context file. They just disagr
 
 Same job in all of them: *load who you are and how you work, before the conversation starts.*
 
-**The filename is the easy part. Knowing what to put in it is the whole problem** — and that's what this kit is. `kit/CLAUDE.template.md` is a template for that file whatever your tool calls it. Save it as `AGENTS.md`, paste it into a system prompt box, keep both — it's the same content doing the same work.
+**The filename is the easy part. Knowing what to put in it is the whole problem** — and that's what this kit is. `kit/AGENTS.template.md` is a template for that file whatever your tool calls it. Save it as `AGENTS.md`, paste it into a system prompt box, keep both — it's the same content doing the same work.
 
 > **Tested, not assumed.** The same spine has been run three ways: as `CLAUDE.md` in Claude Code, as an Open-WebUI system prompt against a hosted model, and as `CONVENTIONS.md` driving [Aider](https://aider.chat) with Qwen on Ollama. Three tools, three vendors, one file. In the terminal test it went from silently writing pointless code to *"I need to push back on this request"* — same model, same settings, **only the spine changed.**
 
