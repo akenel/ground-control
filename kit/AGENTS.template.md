@@ -6,16 +6,28 @@
 
 ---
 
+## SESSION START — read these, in this order
+
+*Copilot: this section is addressed to you. Do it at the start of every session, before answering anything.*
+
+1. **This file**, top to bottom. It is who we are and how we work.
+2. **`<YOUR MEMORY INDEX>`** (e.g. `MEMORY.md`) — the index of what we have learned. One line per memory. Read the whole index; open an individual `<YOUR MEMORY FOLDER>/*.md` file only when a line tells you it is relevant to what we are doing right now.
+3. **`<YOUR WORKLIST FILE>`** — what's next, in order.
+
+Do not skip step 2. Memory that is written and never read is just a folder of notes.
+
+---
+
 ## RESUME CODE WORD — "<YOUR CODE WORD>"
 
 Pick a short phrase. When you say it after a reboot, compaction, or fresh start, it means:
-**stop, open `<YOUR WORKLIST FILE>`, state the top items, and start executing the first actionable one — do not re-plan or re-ask what's already decided.**
+**stop, do the SESSION START reads above, state the top items on the worklist, and start executing the first actionable one — do not re-plan or re-ask what's already decided.**
 
 - The worklist is the single source of truth for what's next, in order.
-- Detail lives in the memory files (see `MEMORY-SYSTEM.md`).
+- The memory index is the single source of truth for what we have already learned. Detail lives one file down (see `MEMORY-SYSTEM.md`).
 - You can change the code word or the deck anytime — update this section and the worklist.
 
-> The code word = read the worklist and GO. No fumbling, no re-deriving — act on the top item.
+> The code word = load the context, read the worklist, and GO. No fumbling, no re-deriving — act on the top item.
 
 ---
 
@@ -61,9 +73,10 @@ Keep this short and true. Update it when reality changes.
 ### Key paths
 ```
 <root>/
-├── <worklist file>        # what's next, in order
-├── AGENTS.md              # this file (persistent memory / the spine)
-├── <memory folder>/       # one fact per file + index
+├── AGENTS.md              # this file — the spine, loaded every session
+├── <memory index>         # e.g. MEMORY.md — one line per memory, read every session
+├── <memory folder>/       # e.g. memory/ — one fact per file, opened on demand
+├── <worklist file>        # e.g. WORKLIST.md — what's next, in order
 └── <where the work lives>
 ```
 

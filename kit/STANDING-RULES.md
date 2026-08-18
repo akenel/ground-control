@@ -1,6 +1,6 @@
 # Standing Rules — The Operating Contract
 
-*These are the non-negotiables. They turn a clever assistant into a reliable partner. Paste them into your `CLAUDE.md`, add your own, and hold the line.*
+*These are the non-negotiables. They turn a clever assistant into a reliable partner. Paste them into your spine — `AGENTS.md`, `CLAUDE.md`, or your system prompt, whatever your tool reads — add your own, and hold the line.*
 
 ---
 

@@ -47,11 +47,11 @@ More than 10 and the thread gets lost. If the work needs 15 items, split it into
 
 ---
 
-## The CLAUDE.md side
+## The spine side
 
-The worklist says **what to do**. `CLAUDE.md` says **how to do it** — the patterns, the stack, the project identity. The copilot reads both on the code word. A worklist without `CLAUDE.md` produces code that doesn't match your project. `CLAUDE.md` without a worklist produces chat, not work.
+The worklist says **what to do**. Your spine — `AGENTS.md`, `CLAUDE.md`, or a system prompt, whichever your tool reads — says **how to do it**: the patterns, the stack, the project identity. The copilot reads both on the code word. A worklist without a spine produces code that doesn't match your project. A spine without a worklist produces chat, not work.
 
-The key section in `CLAUDE.md` that makes the worklist sing:
+The key section in the spine that makes the worklist sing:
 
 ```markdown
 ## KEY PATTERNS (follow these exactly)
@@ -71,8 +71,8 @@ When the copilot reads this before executing the worklist, it writes code that l
 If you plan in one session and execute in another (e.g., one chat for architecture, one for coding), the worklist is the **handoff document** — it's how the planner talks to the coder without being in the same room.
 
 ```
-1. Planning session:  Read the repo, understand the problem, write CLAUDE.md + WORKLIST.md
-2. Coding session:    Type the code word → copilot reads CLAUDE.md → reads WORKLIST.md → executes
+1. Planning session:  Read the repo, understand the problem, write the spine + WORKLIST.md
+2. Coding session:    Type the code word → copilot reads the spine → MEMORY.md → WORKLIST.md → executes
 3. Planning session:  Verify what was produced, catch issues, plan the next worklist
 4. Repeat
 ```

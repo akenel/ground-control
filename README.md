@@ -24,25 +24,48 @@ No app. No subscription. No account. No vendor. Five files and a habit.
 - **Second-career founders** building something real, with no time to waste on false starts
 - **Anyone** who has thought *"why am I re-explaining this to the AI again?"*
 
-If that's you, one focused half-hour gets you a setup that stops costing you the same half-hour every morning.
+If that's you, one sitting gets you a setup that stops costing you the same half-hour every morning.
 
-## Quick start (about 30 minutes, once)
+## Quick start
 
-**Fastest path** — make your own copy from this template:
+### The fast way — let your agent do it (about 20 minutes)
+
+Clone this repo anywhere, open it with your AI agent, and say **"help me set up."**
+
+```bash
+git clone https://github.com/akenel/ground-control.git
+```
+
+That's the whole instruction. This repo carries its own [`AGENTS.md`](AGENTS.md) written *to the agent*, so Claude Code, Codex, Cursor, aider and the rest arrive already knowing what this is and how to onboard you. It will read the kit, scaffold your spine, memory index and worklist, and come back with a short list of questions only you can answer — your mission, your code word, what you're building.
+
+**Answer those questions and you're set up.** That's the twenty minutes: it's a conversation, not a copy-paste job.
+
+> This is the path we recommend, and it's the one that gets tested. A kit about working with an AI copilot should be installed by one.
+
+### The manual way — do it yourself (an hour or two)
+
+Prefer to drive? Start your own repo from this one — click **"Use this template"** at the top of the page, or:
 
 ```bash
 gh repo create my-project --template akenel/ground-control --private --clone
 ```
 
-Or just click **"Use this template"** at the top of this page. Then:
+Then, **in your own project** (not in a clone of this one — see [Where the files go](#where-the-files-go)):
 
-1. **Copy `kit/AGENTS.template.md`** into your own project as `AGENTS.md` — or `CLAUDE.md`, or whatever file your tool reads ([see below](#it-isnt-just-for-one-tool--the-file-has-many-names)).
-2. **Fill the blanks** — who you are, what you're building, the paths that matter. ~30 minutes, once.
+1. **Copy `kit/AGENTS.template.md`** in as `AGENTS.md` — or `CLAUDE.md`, or whatever file your tool reads ([see below](#it-isnt-just-for-one-tool--the-file-has-many-names)).
+2. **Fill the blanks.** Who you are, what you're building, the paths that matter. This is the slow part, and it's slow because it's a self-interview, not typing.
 3. **Paste in the rules** — drop `kit/STANDING-RULES.md` into that same spine file. These are the non-negotiables.
-4. **Set up your memory folder** — follow `kit/MEMORY-SYSTEM.md`. One fact per file, one index line each.
-5. **Work.** When something's decided, write it to memory. When context changes, update the file. Never re-explain the same thing twice.
+4. **Set up your memory** — follow `kit/MEMORY-SYSTEM.md`: a `MEMORY.md` index plus a `memory/` folder, one fact per file. The spine's **SESSION START** block already tells your copilot to read the index every session — keep that block or memory never gets loaded.
+5. **Write your first worklist** — `kit/WORKLIST-TEMPLATE.md`. Without one, your code word has nothing to open.
+6. **Prove it loaded.** Start a completely fresh session, say your code word, and watch. It should state the top items on your worklist without you explaining anything. **If it doesn't, your spine isn't being read** — check the filename matches what your tool actually loads, and that it's at your project root.
 
-Not sure where to start? **Open this repo in your AI agent and ask it to help you set up.** This repo carries its own [`AGENTS.md`](AGENTS.md), so Claude Code, Codex, Cursor, aider and the rest all arrive already knowing what this is and how to onboard you — it's a working example of the method it teaches.
+Step 6 is not optional. Rule 4 of the kit is *prove, don't assume*, and that applies to the kit itself.
+
+### Where the files go
+
+The spine belongs at the root of **the project you actually work in** — not inside a clone of this repo. If you cloned Ground Control to read it, copy the kit files out to your real project and work there. Your tool loads the context file at *its* working root; files sitting in a clone of this repo won't be picked up when you're working somewhere else.
+
+If you used **"Use this template"**, your new repo *is* your project — fill in the spine there. One caveat: that repo's own `AGENTS.md` is Ground Control's onboarding file. Replace it with your filled-in spine; you won't need the onboarding twice.
 
 ## What's in the box
 
@@ -59,7 +82,7 @@ Not sure where to start? **Open this repo in your AI agent and ask it to help yo
 ```
 README ──────────► the pitch + quick start (you are here)
    │
-   ├─► AGENTS.template ──► the spine you fill in (30 min, once)
+   ├─► AGENTS.template ──► the spine you fill in — once
    │        │
    │        └─► STANDING-RULES ──► the discipline you paste in
    │
