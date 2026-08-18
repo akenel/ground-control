@@ -4,7 +4,7 @@
 
 ![A cold copilot session resuming instantly from memory: the user types the code word "ON DECK" and the copilot reopens the worklist, fixes the bug, checks its siblings, re-probes after deploy, and writes the lesson to memory.](assets/session.svg)
 
-<sub><i>A fresh session with nothing in context — one code word, and the copilot picks up exactly where you left off. No re-explaining.</i></sub>
+<sub><i>A fresh session with nothing in context. You type one short phrase you picked yourself — here it's "ON DECK" — and the copilot opens your worklist and carries on exactly where you left off. No re-explaining.</i></sub>
 
 ---
 
@@ -12,7 +12,7 @@ You started using an AI copilot. It's brilliant for ten minutes, then every new 
 
 Ground Control fixes that. It's a tiny starter kit — a handful of files you copy once — that turns a clever-but-forgetful assistant into a **reliable partner** that:
 
-- **Remembers** — a file-based memory that survives every reboot, compaction, and fresh start
+- **Remembers** — a file-based memory that survives every reboot, fresh start, and compaction (when your tool quietly drops the earlier conversation to make room)
 - **Holds the standard** — a written contract of operating rules it must follow, every time
 - **Stays under your control** — you steer, it rows; you never hand over the wheel
 
@@ -24,9 +24,9 @@ No app. No subscription. No account. No vendor. Five files and a habit.
 - **Second-career founders** building something real, with no time to waste on false starts
 - **Anyone** who has thought *"why am I re-explaining this to the AI again?"*
 
-If that's you, you're ten minutes from a better setup.
+If that's you, one focused half-hour gets you a setup that stops costing you the same half-hour every morning.
 
-## Quick start (15 minutes to first value)
+## Quick start (about 30 minutes, once)
 
 **Fastest path** — make your own copy from this template:
 
@@ -91,13 +91,20 @@ If you switch tools next year, you rewrite one filename. That's the point of own
 
 ## ▶ Built with this method — play it
 
-This repo eats its own cooking. **TIG · Tempest** is a complete arcade game — a faithful tribute to the 1981 classic — built in a **single session** using nothing but the spine in this kit: a human steering, an AI copilot rowing, every step written to files.
+**TIG · Tempest** is a complete arcade game, a tribute to the 1981 classic, built in a **single session** on nothing but the spine in this kit — a human steering, a copilot rowing, every step written to files.
 
-**[▶ Play it live → wolfhold.app/tempest](https://www.wolfhold.app/tempest)** — running on my own domain, deployed the *same day* it was built, and still serving.
+**[▶ Play it live → wolfhold.app/tempest](https://www.wolfhold.app/tempest)** — deployed the same day it was built, and still serving. It ships inside [Freehold](https://github.com/akenel/freehold), spine and worklist and memory files included, because a kit you can read in one sitting beats a kit padded with the things it built.
 
-It doesn't live in this repo, and that's the point. Tempest ships as a route inside [**Freehold**](https://github.com/akenel/freehold), the real system it belongs to — spine, worklist, memory files and all. Ground Control stays the kit; the proof lives where it runs.
+## What this is not
 
-*A kit you can read in one sitting is worth more than a kit padded with the things it built.*
+Worth being straight about, before you spend the half hour:
+
+- **It is not software.** Five markdown files and a habit. Nothing to install, nothing to run, nothing that can break.
+- **It will not make your copilot correct.** It makes it *consistent* — it remembers your context, follows your rules, and tells you when it hasn't verified something. A confidently wrong answer is still a confidently wrong answer.
+- **It will not write your worklist for you.** You still have to decide what matters and say so clearly. The kit is what turns that decision into work; it isn't the decision.
+- **It is not automated.** Memory grows because you write to it at the end of a session. Skip that habit and this is just a folder of templates.
+
+If you want a tool that thinks for you, this isn't it. It's for people who already know what they want and are tired of explaining it every morning.
 
 ## The one rule that makes it all work
 
@@ -115,4 +122,4 @@ Found this useful? Confused by something? [Open an issue](../../issues) or start
 
 [CC BY 4.0](LICENSE) — use it, adapt it, build on it, ship it in your own work. Just keep the credit.
 
-*Ground Control is the free, open spine of a larger method for running your whole operation through one AI copilot. Built by Angelo Kenel.*
+*Ground Control is free and open, and this is all of it — the whole method, in five files. Built by Angelo Kenel.*
