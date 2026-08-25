@@ -133,6 +133,8 @@ If you want a tool that thinks for you, this isn't it. It's for people who alrea
 
 > **Write to files, not chat.** Chat is water — it evaporates at the next compaction. Files are stone. Anything that matters goes into a file your copilot reads next session, or it never happened.
 
+And its harder half: write it to the file that **actually gets read**, in the same breath as the change. A file nobody opens is chat with extra steps, and a file that is confidently out of date is worse than no file at all — because it gets trusted.
+
 Everything else here is downstream of that one habit.
 
 ---
