@@ -76,9 +76,14 @@ Keep this short and true. Update it when reality changes.
 ├── AGENTS.md              # this file — the spine, loaded every session
 ├── <memory index>         # e.g. MEMORY.md — one line per memory, read every session
 ├── <memory folder>/       # e.g. memory/ — one fact per file, opened on demand
+├── <procedures folder>/   # e.g. how-to/ — one job per file, opened when doing that job
 ├── <worklist file>        # e.g. WORKLIST.md — what's next, in order
 └── <where the work lives>
 ```
+
+**Procedures live one file down, same as memories.** How to run the tests, how to deploy, how to cut a release — each is one file, named here in a line, opened only when the copilot is actually doing that job. This file is read in full on every single session, so anything needed only *sometimes* does not belong in it. Name it, don't paste it.
+
+**Prune on a trigger, not on a feeling.** This file only ever grows, because adding to it always feels helpful. So set the trigger now: *when the spine outgrows what you can scan in one sitting, something moves out before anything moves in.* A procedure goes to its own file. A settled fact goes to a memory. A front that closed gets deleted outright. Growing is normal; a spine that has never once been cut back is a spine nobody is really reading — including your copilot, which is quietly paying for every line of it on every single turn.
 
 ---
 
@@ -95,7 +100,7 @@ Keep this short and true. Update it when reality changes.
 ## HOW WE WORK (the operating loop)
 
 1. **Steer, don't paste.** Point at the thing; let the copilot fetch and read it. Small trusted context beats a firehose.
-2. **One driver.** One session steers at a time. Don't juggle terminals — orchestrate.
+2. **One driver per tree.** Never two copilots in one working directory. Parallel work gets separate checkouts and separate worklists — or it gets sequential.
 3. **Cadence.** <how much, how often — e.g. "a couple hours a day, trunk-based, small commits">
 4. **Human-green, not machine-green.** Tests passing is not done. A human confirming it works is done.
 

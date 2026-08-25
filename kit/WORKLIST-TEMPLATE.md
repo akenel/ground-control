@@ -43,7 +43,7 @@ Model before router. Router before template. Code before tests. Tests before com
 This enforces Rule 4 (prove, don't assume) and Rule 5 (human-green beats machine-green). The copilot runs the tests, reports what happened, then commits — in that order, every time.
 
 **Keep it to 5-10 items.**
-More than 10 and the thread gets lost. If the work needs 15 items, split it into two worklists. Finish batch 1, verify, then write batch 2. Sequential, not parallel — Rule 7: one driver, one session at a time.
+More than 10 and the thread gets lost. If the work needs 15 items, split it into two worklists. Finish batch 1, verify, then write batch 2 — the second batch is written knowing what the first one taught you, which is the whole reason not to write both up front.
 
 ---
 
@@ -77,7 +77,7 @@ If you plan in one session and execute in another (e.g., one chat for architectu
 4. Repeat
 ```
 
-The worklist is the contract. The planner writes it. The coder executes it. The human verifies it. Sequential, never parallel — one driver at a time.
+The worklist is the contract. The planner writes it. The coder executes it. The human verifies it. One worklist, one driver, one working directory — if you run sessions side by side, each gets its own checkout and its own worklist (Rule 7). Two coders against one worklist in one folder is how you get work silently overwritten.
 
 ---
 
