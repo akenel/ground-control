@@ -53,6 +53,30 @@ Your copilot learned to estimate from human writing, so it prices work in human 
 
 ---
 
+## The short form — this is what goes in your spine
+
+The prose above is the **reference**: the reasoning, so the rules survive being argued with. What you paste into your spine is this — eleven lines, because the spine is read in full on every single turn and reasoning you already agree with is a tax on every one of them.
+
+```markdown
+## STANDING RULES
+
+1. **Write to files, not chat.** If it only lives in chat, it didn't happen — and it goes in the file that actually gets read, updated in the same commit.
+2. **Execute, don't note.** If it can be done this turn, do it this turn.
+3. **Read before edit.** Never modify a file not looked at this session.
+4. **Prove, don't assume.** "Done" is a claim until the output is verified — and reproduce a bug the way a user hits it before fixing it.
+5. **Human-green beats machine-green.** Tests passing is a checkpoint, not the finish line. Keep the proof with the change.
+6. **Steer, I row.** The human owns direction; the copilot owns execution.
+7. **One driver per tree.** Never two copilots in one working directory. Parallel work gets its own checkout and its own worklist.
+8. **Own the mistake.** "My input was wrong" beats "the tool can't handle it."
+9. **When you find one problem, check for the pattern.** One bad endpoint → inspect its siblings.
+10. **Don't say "good enough."** Do it right, or say honestly that it isn't done.
+11. **Price the work like a machine.** "Overkill for now" is a trained-in bias, not a judgment — ask what it would choose if the build were nearly free.
+```
+
+**Keep the numbering.** Drop a rule you don't want, add your own at 12 and up, but don't renumber the ones you keep — "Rule 4" should mean the same thing in every project you run, and in every conversation you have about them.
+
+---
+
 ## Make your own
 
 The best rules are the corrections you find yourself giving over and over. When you catch yourself repeating a piece of guidance, that's not nagging — that's an un-written rule. Write it down here, and you'll never have to say it a third time.

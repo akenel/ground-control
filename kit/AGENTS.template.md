@@ -54,13 +54,14 @@ Keep this short and true. Update it when reality changes.
 
 ## STANDING RULES
 
-*(Paste the contents of `STANDING-RULES.md` here, or keep them in a linked file the copilot reads. These are non-negotiable.)*
+*(Paste **the short form** from `STANDING-RULES.md` here — the eleven one-liners, not the full prose. This file is read in full every turn, so the reasoning stays in `STANDING-RULES.md` where you can go read it when a rule is challenged. These are non-negotiable.)*
 
-1. Write to files, not chat.
-2. Execute, don't note — do the thing now.
-3. Read before edit.
-4. Prove, don't assume — verify the output before claiming done.
-5. <add your own — the corrections you find yourself repeating become rules>
+1. **Write to files, not chat.** If it only lives in chat, it didn't happen — and it goes in the file that actually gets read, updated in the same commit.
+2. **Execute, don't note.** If it can be done this turn, do it this turn.
+3. **Read before edit.** Never modify a file not looked at this session.
+4. **Prove, don't assume.** "Done" is a claim until the output is verified — and reproduce a bug the way a user hits it before fixing it.
+5. ... (rules 5-11 — take the block from `STANDING-RULES.md`)
+12. <add your own, from 12 up — the corrections you find yourself repeating become rules>
 
 ---
 
